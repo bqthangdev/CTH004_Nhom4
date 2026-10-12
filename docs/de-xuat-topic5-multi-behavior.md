@@ -112,9 +112,9 @@ Nếu chọn MBHT, chỉ nên chạy Retailrocket. Taobao và IJCAI quá lớn c
 
 ## Việc còn cần nhóm quyết
 
-1. Chốt BIPN, CRGCN hay MBHT.
-2. Máy train có GPU, hay dùng Google Colab.
-3. Với BIPN, bộ dữ liệu thứ hai dùng Yelp có sẵn trong code, hay tự xử lý thêm một bộ ngoài bài.
+1. Đã lấy BIPN làm đường làm.
+2. Hai máy đều có GPU. Máy đang mở repo là RTX 3050 Ti 4 GB. Máy còn lại, theo lời thành viên, là RTX 4050. Chi tiết trong `docs/memory.md`.
+3. Bộ thứ hai đã ghi nhận là Retailrocket, chờ xác nhận. Bảng so sánh với bốn bộ trong zip BIPN nằm ở `docs/plan-bipn.md`.
 
 ## Việc đã kiểm tra
 

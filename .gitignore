@@ -7,3 +7,5 @@ paper/*.bbl
 paper/*.blg
 paper/*.toc
 paper/*.synctex.gz
+**/__pycache__/
+bipn/.venv/

@@ -8,6 +8,8 @@ Danh sách bài báo của giảng viên: https://github.com/wubinzzu/Multi-Beha
 
 Phân tích chi tiết ba phương án: [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md)
 
+Plan triển khai BIPN: [docs/plan-bipn.md](docs/plan-bipn.md). Khung code: [bipn](bipn). Ghi nhớ hiện trạng: [docs/memory.md](docs/memory.md). Câu cần xác nhận: [docs/cau-hoi-can-xac-nhan.md](docs/cau-hoi-can-xac-nhan.md).
+
 ## Yêu cầu
 
 Nhóm 2 sinh viên. Chọn một phương pháp trong danh sách trên, chạy lại code, sửa mô hình, đổi sang một bộ dữ liệu khác, rồi so với một mô hình khác.
@@ -15,7 +17,7 @@ Nhóm 2 sinh viên. Chọn một phương pháp trong danh sách trên, chạy l
 - Báo cáo theo mẫu Springer: 30%
 - Kết quả thí nghiệm: 70%
 
-Tên thành viên nhóm chưa có trong tài liệu hiện tại.
+Tên tạm trên báo cáo là NVA và NVB. Email và tên trường đầy đủ chưa có.
 
 ## Báo cáo Springer
 
@@ -51,7 +53,7 @@ Behavior-Contextualized Item Preference Modeling. SIGIR 2024.
 | Code | https://github.com/MingshiYan/BIPN |
 | Dữ liệu đã xử lý, đi kèm code | https://github.com/MingshiYan/BIPN/blob/main/data.zip |
 
-`data.zip` có Tmall, Taobao, Yelp và ML10M. Phải chạy `data_process.py` trong từng thư mục trước khi train.
+`data.zip` có Tmall, Taobao, Yelp và ML10M. Code gốc cần chạy `data_process.py` trong từng thư mục trước khi train. Khung `bipn/` đọc trực tiếp file thô, không cần bước đó.
 
 Nguồn gốc mà bài báo ghi:
 
