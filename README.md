@@ -17,6 +17,23 @@ Nhóm 2 sinh viên. Chọn một phương pháp trong danh sách trên, chạy l
 
 Tên thành viên nhóm chưa có trong tài liệu hiện tại.
 
+## Báo cáo Springer
+
+Mẫu đang dùng là lớp LaTeX chính thức `llncs` phiên bản 2.26, ngày 25/02/2025, của Springer cho bài hội nghị LNCS. Slide chỉ ghi “Springer paper template”, không ghi mẫu tạp chí.
+
+Nguồn mẫu: https://www.springer.com/gp/computer-science/lncs/conference-proceedings-guidelines
+
+File bài: [paper/main.tex](paper/main.tex). Tài liệu tham khảo: [paper/refs.bib](paper/refs.bib). Máy này đã có MiKTeX và lớp `llncs`, nên không cần chép `llncs.cls` vào thư mục.
+
+Biên dịch trong thư mục `paper`:
+
+```text
+pdflatex -interaction=nonstopmode main.tex
+bibtex main
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
+```
+
 ## Ba phương án
 
 Nên làm BIPN. CRGCN dễ giảng hơn nhưng khó cài. MBHT là hướng dự đoán món tiếp theo theo thời gian.

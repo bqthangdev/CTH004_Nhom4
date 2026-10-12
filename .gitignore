@@ -1,1 +1,9 @@
 docs/CD HTTT TM.pdf
+
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.toc
+paper/*.synctex.gz

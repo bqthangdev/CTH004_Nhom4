@@ -1,0 +1,111 @@
+% Khung bao cao LNCS (Springer), lop llncs v2.26 (25/02/2025).
+% Slide mon hoc chi ghi "Springer paper template", khong chi ro hoi nghi hay tap chi.
+% Day la mau bai hoi nghi chinh thuc cua Springer cho LNCS va cac series lien quan.
+% Ten tac gia, email va ten truong chua co trong tai lieu nhom. Can dien truoc khi nop.
+\documentclass{llncs}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\begin{document}
+
+\titlerunning{Goi y da hanh vi}
+\authorrunning{Tác giả A và Tác giả B}
+
+\title{Gợi ý đa hành vi cho hệ thống thương mại điện tử}
+\subtitle{Bài tập nhóm Topic 5, Chuyên đề HTTT Thông minh}
+
+\author{Tác giả A\inst{1} \and Tác giả B\inst{1}}
+
+\institute{Khoa HTTT}
+
+\maketitle
+
+\begin{abstract}
+Báo cáo này trình bày một thí nghiệm gợi ý đa hành vi: chạy lại một mô hình đã công bố, chỉnh sửa mô hình, đánh giá trên một bộ dữ liệu khác và so với một mô hình đối chứng.
+Phương pháp, số liệu và kết luận sẽ được điền sau khi nhóm chạy thí nghiệm.
+Các ô trong bảng dưới đây là chỗ trống, không phải kết quả đo được.
+\keywords{Gợi ý đa hành vi \and Lọc cộng tác \and Đồ thị}
+\end{abstract}
+
+\section{Giới thiệu}
+Người dùng trên sàn thương mại thường có nhiều hành vi trên cùng một món hàng, ví dụ xem, thêm vào giỏ và mua.
+Hành vi mua thường ít hơn hành vi xem.
+Mô hình đa hành vi dùng các hành vi phụ để hỗ trợ dự đoán hành vi đích~\cite{yan2024bipn}.
+
+Nhóm chưa chốt phương pháp sẽ triển khai.
+Ba ứng viên đã được đối chiếu với code và dữ liệu là BIPN~\cite{yan2024bipn}, CRGCN và MBHT~\cite{yang2022mbht}.
+
+\section{Phương pháp}
+Phần này mô tả mô hình được chọn, phần sẽ sửa, và mô hình dùng để so sánh.
+Nội dung sẽ được viết sau khi nhóm chốt phương pháp.
+
+Một dạng hàm mất mát xếp hạng theo cặp, dùng trong BIPN, là
+\begin{equation}
+\mathcal{L}_{\mathrm{bpr}} = -\sum_{(u,i,j)\in\mathcal{O}}\ln\sigma(y_{ui}-y_{uj}).
+\end{equation}
+Công thức này được ghi lại từ bài báo, để kiểm tra môi trường toán.
+Hệ số và cách kết hợp với các hàm mất mát khác sẽ được nêu khi mô hình được chốt.
+
+\section{Thí nghiệm}
+\subsection{Dữ liệu}
+Bảng~\ref{tab:data} là khung thống kê.
+Các ô để trống cho đến khi nhóm đếm trên dữ liệu mình chạy.
+
+\begin{table}[t]
+\caption{Thống kê dữ liệu sau khi nhóm xử lý. Các ô chưa có số đo.}
+\label{tab:data}
+\centering
+\begin{tabular}{lrrrr}
+\hline
+Dữ liệu & User & Item & Tương tác & Hành vi \\
+\hline
+Bộ 1 & -- & -- & -- & -- \\
+Bộ 2 & -- & -- & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Thiết lập}
+Các mục sẽ điền: cách chia tập huấn luyện và kiểm tra, kích thước embedding, hệ số học, số epoch, và thiết bị train.
+Chỉ số dự kiến là HR@K và NDCG@K, cùng thang đo mà bài báo gốc sử dụng.
+
+\subsection{Kết quả}
+Bảng~\ref{tab:result} so sánh mô hình gốc, bản đã sửa, và mô hình đối chứng trên hai bộ dữ liệu.
+
+\begin{table}[t]
+\caption{Kết quả trên tập kiểm tra. Các ô chưa có số đo.}
+\label{tab:result}
+\centering
+\begin{tabular}{llrr}
+\hline
+Dữ liệu & Mô hình & HR@10 & NDCG@10 \\
+\hline
+Bộ 1 & Mô hình gốc & -- & -- \\
+Bộ 1 & Mô hình đã sửa & -- & -- \\
+Bộ 1 & Mô hình đối chứng & -- & -- \\
+Bộ 2 & Mô hình gốc & -- & -- \\
+Bộ 2 & Mô hình đã sửa & -- & -- \\
+Bộ 2 & Mô hình đối chứng & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Kết luận}
+Phần này sẽ nêu mô hình nào tốt hơn trên từng bộ dữ liệu, và giới hạn của thí nghiệm.
+Chưa có kết luận vì chưa có số đo.
+
+\begin{credits}
+\subsubsection*{\ackname}
+Phần cảm ơn sẽ được điền nếu có.
+\subsubsection*{\discintname}
+Nhóm chưa khai báo xung đột lợi ích.
+\end{credits}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}
