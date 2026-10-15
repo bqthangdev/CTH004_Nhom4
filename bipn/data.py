@@ -32,6 +32,9 @@ class BehaviorData:
         self.all_graph = _bipartite_graph(n_users, n_items, _pairs_from(train, self.behaviors))
         self.target_graph = _bipartite_graph(n_users, n_items, _pairs_from(train, [self.target]))
 
+    def positive_counts(self):
+        return [sum(len(items) for items in self.train[name].values()) for name in self.behaviors]
+
     def bce_rows(self, rng, neg_count):
         rows = []
         for behavior_id, behavior in enumerate(self.behaviors):

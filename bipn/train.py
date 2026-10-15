@@ -8,7 +8,7 @@ from metrics import hit_ndcg
 
 def train_one_epoch(model, data, optimizer, config, rng):
     model.train()
-    bce_rows = data.bce_rows(rng, config.neg_count)
+    bce_rows = data.bce_rows(rng, config.neg_count) if model.uses_bce else []
     bpr_rows = data.bpr_rows(rng)
     rng.shuffle(bce_rows)
     rng.shuffle(bpr_rows)

@@ -1,41 +1,48 @@
 # Ghi nhớ hiện trạng
 
-Cập nhật 12/10/2026.
+Cập nhật 15/10/2026.
 
 ## Đã chốt
 
-Đường làm là BIPN, SIGIR 2024, arXiv 2404.18166. Khung nằm ở `bipn/`. Plan ở `docs/plan-bipn.md`. So sánh phương án ở `docs/de-xuat-topic5-multi-behavior.md`. Câu chưa xác nhận: `docs/cau-hoi-can-xac-nhan.md`.
+Đường làm là BIPN, SIGIR 2024, arXiv 2404.18166. Khung nằm ở `bipn/`.
 
-Báo cáo giữ mẫu LNCS, lớp `llncs` 2.26, file `paper/main.tex`. Slide chỉ ghi mẫu Springer. Có thể hỏi giảng viên về mẫu tạp chí. Chưa đổi.
+Ba lệnh mô hình: `--model bipn`, `--model weighted`, `--model lightgcn`. Bộ một là Tmall. Bộ hai là Retailrocket, chuyển bằng `bipn/prepare_retailrocket.py`. Plan: `docs/plan-bipn.md`. File plan ngày 15/10/2026 đã được gom vào file này.
 
-Tên tạm trên báo cáo là NVA và NVB, cùng Khoa HTTT. Email và tên trường đầy đủ chưa có.
-
-Hành vi cuối là hành vi đích. Bộ một là Tmall: click, collect, cart, buy. Bộ hai đã ghi nhận là Retailrocket, chờ thành viên còn lại xác nhận. Bảng so với bốn bộ trong zip BIPN nằm ở `docs/plan-bipn.md`.
+Báo cáo giữ mẫu LNCS, file `paper/main.tex`. Phần lý thuyết đã viết. Bảng HR và NDCG vẫn trống. Tên tạm là NVA và NVB. Email và tên trường đầy đủ chưa có.
 
 ## Máy train
 
-Máy đang mở repo, đã kiểm bằng lệnh: RTX 3050 Ti Laptop, 4096 MiB, driver 617.42, RAM 31,7 GB. `bipn/.venv` là torch 2.14.1+cpu và NumPy 2.5.4, chưa dùng GPU.
+Máy đang mở repo, đã kiểm bằng lệnh ngày 12/10/2026: RTX 3050 Ti Laptop, 4096 MiB, driver 617.42, RAM 31,7 GB. `bipn/.venv` là torch 2.14.1+cpu và NumPy 2.5.4.
 
 Thành viên còn lại cho biết máy của họ là Idealpad 5 Pro, Core Ultra 9 185H, RTX 4050, 32 GB RAM. Đây là lời kể, chưa kiểm trên máy đó.
 
-Chưa chọn máy nào giữ bản train dài. Colab không còn là phương án chính vì cả hai máy đều có GPU.
-
-## Máy và lệnh
-
-Trong `bipn`:
-
-```text
-.venv\Scripts\python.exe main.py --smoke
-```
-
-Lần chạy 12/10/2026: epoch 1 loss 0.5902, epoch 2 loss 0.5755. Dữ liệu giả 40 user, không phải số của bài báo.
-
-Loader và metric đã kiểm riêng: đọc một thư mục tạm đúng định dạng, từ chối id ngoài phạm vi, HR@1 của một ma trận biết trước bằng 0.5.
+Chưa chọn máy nào giữ bản train dài. Chưa cài PyTorch CUDA.
 
 ## Dữ liệu
 
-`data.zip` của repo BIPN nằm ở `%TEMP%\bipn_data.zip`, 47.108.508 byte, chưa copy vào git. `count.txt`: Tmall 41738 user và 11953 item, Taobao 48749 và 39493, Yelp 19800 và 22734, ML10M 67788 và 8704. Khung không cần `pos_sampling.txt`. Retailrocket chưa tải.
+Bộ BIPN đã giải nén tại `data/Tmall`, `data/taobao`, `data/Yelp`, `data/ML10M`. Tmall: 41738 user, 11953 item. Retailrocket đã giải nén và chuyển tại `data/retailrocket`: 11719 user, 31839 item, train view 88304, cart 22716, buy 8666, test 11719 dòng, validation 885 dòng. Hướng dẫn tải nằm ở `data/README.md`. File dữ liệu không đưa vào git.
 
 ## Chưa làm
 
-Chưa train Tmall. Chưa tải Retailrocket. Chưa thêm trọng số hành vi. Chưa có script LightGCN đối chứng. Bảng trong báo cáo vẫn để trống. Chưa commit.
+Chưa train đủ epoch. Bảng HR và NDCG trong báo cáo vẫn trống. Chưa commit.
+
+## Nhật ký
+
+### 2026-10-12
+
+- Đối chiếu BIPN, CRGCN và MBHT. Chọn BIPN làm hướng viết plan.
+- Tạo khung `bipn/`, mẫu LNCS và `docs/plan-bipn.md`.
+- Cài `bipn/.venv` với torch 2.14.1+cpu. `--smoke` cho loss 0.5902 rồi 0.5755 trên dữ liệu giả.
+- Đếm bốn bộ trong `data.zip`. Đề xuất Retailrocket. Ghi `docs/cau-hoi-can-xac-nhan.md`.
+- Ghi máy RTX 3050 Ti đã kiểm, và máy RTX 4050 theo lời thành viên.
+
+### 2026-10-15
+
+- Chốt BIPN và Retailrocket.
+- Viết `docs/plan-trien-khai-2026-10-15.md` trước khi sửa code.
+- Thêm `--model weighted` và `--model lightgcn`. Thêm `prepare_retailrocket.py`.
+- Viết phần lý thuyết trong `paper/main.tex`. PDF biên dịch lại còn 4 trang. Bảng kết quả vẫn để trống.
+- `--smoke` trên dữ liệu giả: BIPN loss 0.5902 rồi 0.5755, weighted 0.5894 rồi 0.5748, LightGCN 0.5645 rồi 0.5726. Bộ chuyển Retailrocket đã thử trên file CSV nhỏ, đúng phép chia theo thời gian.
+- Giải nén zip BIPN vào `data/`. Thư mục này nằm trong `.gitignore`.
+- Giải nén Retailrocket từ `data/archive.zip` vào `data/retailrocket/` và chạy `prepare_retailrocket.py`.
+- Chưa chạy Tmall hay Retailrocket đủ epoch.

@@ -2,32 +2,41 @@
 
 Bài tập nhóm môn Chuyên đề HTTT Thông minh, Khoa HTTT, 2026. Giảng viên: PGS.TS. Nguyễn Thái Nghe.
 
-Slide đề bài: [docs/CD HTTT TM.pdf](docs/CD%20HTTT%20TM.pdf)
+Phương pháp đang triển khai là BIPN (SIGIR 2024). Bộ dữ liệu là Tmall và Retailrocket. Mô hình đối chứng là LightGCN trên hành vi đích.
 
-Danh sách bài báo của giảng viên: https://github.com/wubinzzu/Multi-Behavior-Recommendation-Papers
+## Cấu trúc
 
-Phân tích chi tiết ba phương án: [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md)
+| Đường dẫn | Nội dung |
+|---|---|
+| [bipn](bipn) | Huấn luyện và chuyển dữ liệu Retailrocket. |
+| [data](data) | Hai bộ dữ liệu. Xem [data/README.md](data/README.md). |
+| [paper](paper) | Báo cáo LNCS. |
+| [docs](docs) | Đề xuất phương án, plan và câu còn mở. |
 
-Plan triển khai BIPN: [docs/plan-bipn.md](docs/plan-bipn.md). Khung code: [bipn](bipn). Ghi nhớ hiện trạng: [docs/memory.md](docs/memory.md). Câu cần xác nhận: [docs/cau-hoi-can-xac-nhan.md](docs/cau-hoi-can-xac-nhan.md).
+Slide đề bài: [docs/CD HTTT TM.pdf](docs/CD%20HTTT%20TM.pdf). Danh sách bài của giảng viên: https://github.com/wubinzzu/Multi-Behavior-Recommendation-Papers
 
-## Yêu cầu
+## Yêu cầu bài tập
 
-Nhóm 2 sinh viên. Chọn một phương pháp trong danh sách trên, chạy lại code, sửa mô hình, đổi sang một bộ dữ liệu khác, rồi so với một mô hình khác.
+Nhóm 2 sinh viên: chạy lại một phương pháp trong danh sách trên, sửa mô hình, đánh giá trên một bộ dữ liệu khác, và so với một mô hình khác.
 
 - Báo cáo theo mẫu Springer: 30%
 - Kết quả thí nghiệm: 70%
 
-Tên tạm trên báo cáo là NVA và NVB. Email và tên trường đầy đủ chưa có.
+Tên trên báo cáo hiện là NVA và NVB. Email và tên trường đầy đủ chưa điền trong [paper/main.tex](paper/main.tex).
 
-## Báo cáo Springer
+## Chạy
 
-Mẫu đang dùng là lớp LaTeX chính thức `llncs` phiên bản 2.26, ngày 25/02/2025, của Springer cho bài hội nghị LNCS. Slide chỉ ghi “Springer paper template”, không ghi mẫu tạp chí.
+Hướng dẫn cài đặt, sáu lần chạy và ý nghĩa tham số: [docs/huong-dan-chay.md](docs/huong-dan-chay.md).
 
-Nguồn mẫu: https://www.springer.com/gp/computer-science/lncs/conference-proceedings-guidelines
+## Báo cáo
 
-File bài: [paper/main.tex](paper/main.tex). Tài liệu tham khảo: [paper/refs.bib](paper/refs.bib). Máy này đã có MiKTeX và lớp `llncs`, nên không cần chép `llncs.cls` vào thư mục.
+Mẫu là lớp `llncs` 2.26 (25/02/2025), mẫu bài hội nghị LNCS của Springer. Slide ghi “Springer paper template” và không ghi mẫu tạp chí.
 
-Biên dịch trong thư mục `paper`:
+Hướng dẫn mẫu: https://www.springer.com/gp/computer-science/lncs/conference-proceedings-guidelines
+
+Nguồn bài: [paper/main.tex](paper/main.tex). Tài liệu tham khảo: [paper/refs.bib](paper/refs.bib). Máy biên dịch cần MiKTeX và lớp `llncs` đã cài. Không chép `llncs.cls` vào thư mục.
+
+Trong thư mục `paper`:
 
 ```text
 pdflatex -interaction=nonstopmode main.tex
@@ -36,75 +45,39 @@ pdflatex -interaction=nonstopmode main.tex
 pdflatex -interaction=nonstopmode main.tex
 ```
 
-## Ba phương án
+## Tài liệu trong repo
 
-Nên làm BIPN. CRGCN dễ giảng hơn nhưng khó cài. MBHT là hướng dự đoán món tiếp theo theo thời gian.
+| Tài liệu | Nội dung |
+|---|---|
+| [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md) | So sánh BIPN, CRGCN và MBHT. |
+| [docs/plan-bipn.md](docs/plan-bipn.md) | Plan BIPN. |
+| [docs/huong-dan-chay.md](docs/huong-dan-chay.md) | Cách chạy và các tham số. |
+| [docs/cau-hoi-can-xac-nhan.md](docs/cau-hoi-can-xac-nhan.md) | Mục đã chốt và mục còn mở. |
+| [docs/memory.md](docs/memory.md) | Hiện trạng và nhật ký. |
 
-Bản dùng để chạy là file đã xử lý đi kèm code. Link gốc bên dưới là trang dữ liệu công khai mà bài báo hoặc README trỏ tới. Hai nguồn này không cùng kích thước.
+## Nguồn
 
-### BIPN (nên chọn)
+### BIPN
 
 Behavior-Contextualized Item Preference Modeling. SIGIR 2024.
 
 | | URL |
 |---|---|
-| Bài báo (arXiv) | https://arxiv.org/abs/2404.18166 |
-| Bài báo (ACM DOI) | https://doi.org/10.1145/3626772.3657696 |
+| arXiv | https://arxiv.org/abs/2404.18166 |
+| DOI | https://doi.org/10.1145/3626772.3657696 |
 | Code | https://github.com/MingshiYan/BIPN |
-| Dữ liệu đã xử lý, đi kèm code | https://github.com/MingshiYan/BIPN/blob/main/data.zip |
+| Dữ liệu kèm code | https://github.com/MingshiYan/BIPN/blob/main/data.zip |
 
-`data.zip` có Tmall, Taobao, Yelp và ML10M. Code gốc cần chạy `data_process.py` trong từng thư mục trước khi train. Khung `bipn/` đọc trực tiếp file thô, không cần bước đó.
-
-Nguồn gốc mà bài báo ghi:
-
-| Bộ dữ liệu | URL đã kiểm tra | Ghi chú |
-|---|---|---|
-| Taobao | https://tianchi.aliyun.com/dataset/649 | Trang đang mở, tiêu đề: 淘宝用户购物行为数据集 |
-| Tmall | https://tianchi.aliyun.com/dataset/140281 | Trang Rec-Tmall. Log đầy đủ khoảng 1,33 tỷ dòng, không phải bộ 41.738 user trong code |
-| Yelp | https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset | Trang Kaggle mở được. Bài báo ghi URL cũ `kaggle.com/yelp-dataset/yelp-dataset` |
-| MovieLens 10M | https://grouplens.org/datasets/movielens/10m/ | Trang GroupLens mở được. File `ml-10m.zip` khoảng 63 MB |
-
-### CRGCN
-
-Cascading Residual Graph Convolutional Network. TOIS 2023.
-
-| | URL |
-|---|---|
-| Bài báo (arXiv) | https://arxiv.org/abs/2205.13128 |
-| Code | https://github.com/MingshiYan/CRGCN |
-| Dữ liệu đã xử lý, đi kèm code | https://github.com/MingshiYan/CRGCN/blob/main/data.zip |
-
-Code khai báo ba bộ: Tmall, Beibei, Jdata. File zip khoảng 57 MB. Lần kiểm tra này chưa giải nén, nên chưa liệt kê thư mục bên trong.
-
-Nguồn gốc mà bài báo ghi:
+`data.zip` gồm Tmall, Taobao, Yelp và ML10M. Cách giải nén nằm ở [data/README.md](data/README.md).
 
 | Bộ dữ liệu | URL | Ghi chú |
 |---|---|---|
-| Tmall | https://tianchi.aliyun.com/dataset/dataDetail?dataId=649 | Bài ghi link này cho Tmall. Cùng mục 649 ở trên đang là dữ liệu Taobao |
-| Beibei | https://www.beibei.com | Trang thương mại, không phải file dữ liệu |
-| Jdata | https://jdata.jd.com/html/detail.html?id=8 | Lần kiểm tra này không mở được trang |
+| Taobao | https://tianchi.aliyun.com/dataset/649 | Tiêu đề trang: 淘宝用户购物行为数据集 |
+| Tmall | https://tianchi.aliyun.com/dataset/140281 | Rec-Tmall. Log đầy đủ khoảng 1,33 tỷ dòng, khác bộ 41.738 user trong `data.zip` |
+| Yelp | https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset | Bài báo ghi URL cũ `kaggle.com/yelp-dataset/yelp-dataset` |
+| MovieLens 10M | https://grouplens.org/datasets/movielens/10m/ | File `ml-10m.zip` khoảng 63 MB |
+| Retailrocket | https://www.kaggle.com/datasets/retailrocket/ecommerce-dataset | Bộ thứ hai của thí nghiệm |
 
-### MBHT
+Các trang arXiv, GitHub, Tianchi, Kaggle và GroupLens ở bảng trên mở được khi kiểm tra ngày 10/10/2026. DOI ACM trả về 403 với truy cập tự động. Số DOI lấy từ thông tin xuất bản của bài.
 
-Multi-Behavior Hypergraph-Enhanced Transformer. KDD 2022. Dự đoán món tiếp theo.
-
-| | URL |
-|---|---|
-| Bài báo (arXiv) | https://arxiv.org/abs/2207.05584 |
-| Bài báo (ACM DOI) | https://doi.org/10.1145/3534678.3539342 |
-| Code | https://github.com/yuh-yang/MBHT-KDD22 |
-| Dữ liệu đã xử lý | https://drive.google.com/file/d/1OFT_5Xp_az-GSHIl7QEPB9zhulbooLzE/view |
-
-Thư mục `dataset/` trên GitHub không chứa dữ liệu. Link Drive trả về trang, chưa tải file nên chưa xác nhận file còn tải được.
-
-Nguồn gốc mà README của code ghi:
-
-| Bộ dữ liệu | URL đã kiểm tra | Ghi chú |
-|---|---|---|
-| Retailrocket | https://www.kaggle.com/datasets/retailrocket/ecommerce-dataset | Nên dùng bộ này nếu chọn MBHT. Bài báo: 11.649 user, 87.822 tương tác sau khi lọc |
-| Taobao | https://tianchi.aliyun.com/dataset/649 | Cùng trang Taobao ở trên. Bản trong bài MBHT lớn hơn nhiều: 147.892 user |
-| IJCAI-15 | https://tianchi.aliyun.com/dataset/42 | Trang đang mở, tiêu đề: IJCAI-15 Repeat Buyers Prediction Dataset. Bản trong bài: 200.000 user |
-
-## Phạm vi đã kiểm tra
-
-Các link arXiv, GitHub, Tianchi 649, Tianchi 42, Tianchi 140281, Kaggle Yelp, Kaggle Retailrocket, GroupLens MovieLens 10M và hai file `data.zip` đều mở được khi kiểm tra ngày 10/10/2026. DOI của ACM bị chặn khi gọi tự động, nhưng đúng số DOI ghi trong thông tin xuất bản của hai bài BIPN và MBHT.
+CRGCN và MBHT được ghi trong [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md).

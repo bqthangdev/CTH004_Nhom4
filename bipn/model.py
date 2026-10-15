@@ -60,7 +60,9 @@ class ItemPreference(nn.Module):
 
 
 class BIPN(nn.Module):
-    def __init__(self, n_users, n_items, behaviors, all_graph, target_graph, config):
+    uses_bce = True
+
+    def __init__(self, n_users, n_items, behaviors, all_graph, target_graph, config, sample_weights=None):
         super().__init__()
         self.behaviors = list(behaviors)
         self.n_users = n_users
@@ -76,6 +78,12 @@ class BIPN(nn.Module):
         self.beta = config.beta
         self.gamma = config.gamma
         self.bce = nn.BCEWithLogitsLoss()
+        if sample_weights is None:
+            self.behavior_weight = None
+        elif len(sample_weights) != len(self.behaviors):
+            raise ValueError("Số trọng số phải bằng số hành vi.")
+        else:
+            self.register_buffer("behavior_weight", torch.tensor(sample_weights, dtype=torch.float32))
         nn.init.xavier_uniform_(self.user_embedding.weight)
         nn.init.xavier_uniform_(self.item_embedding.weight)
         with torch.no_grad():
@@ -112,7 +120,12 @@ class BIPN(nn.Module):
             return user_e.new_zeros(())
         pref = self.preference(user_e[users], item_e[items], self.behavior_embedding[behaviors])
         logits = (pref * item_e[items]).sum(dim=-1)
-        return self.bce(logits, labels.float())
+        labels = labels.float()
+        if self.behavior_weight is None:
+            return self.bce(logits, labels)
+        weights = self.behavior_weight[behaviors]
+        per_row = F.binary_cross_entropy_with_logits(logits, labels, reduction="none")
+        return (per_row * weights).mean()
 
     def _bpr_loss(self, users, pos_items, neg_items, user_e, item_e, user_hat, item_hat, target_items):
         if users.numel() == 0:
@@ -150,3 +163,47 @@ class BIPN(nn.Module):
 
     def _split(self, nodes):
         return nodes[: self.n_user_nodes], nodes[self.n_user_nodes :]
+
+
+class TargetLightGCN(nn.Module):
+    """LightGCN chỉ trên hành vi đích. Cùng cách chấm điểm với BIPN."""
+
+    uses_bce = False
+
+    def __init__(self, n_users, n_items, target_graph, config):
+        super().__init__()
+        self.n_user_nodes = n_users + 1
+        dim = config.embedding_size
+        self.user_embedding = nn.Embedding(self.n_user_nodes, dim)
+        self.item_embedding = nn.Embedding(n_items + 1, dim)
+        self.gcn = LightGCN(target_graph, config.n_layers)
+        self.gamma = config.gamma
+        nn.init.xavier_uniform_(self.user_embedding.weight)
+        nn.init.xavier_uniform_(self.item_embedding.weight)
+        with torch.no_grad():
+            self.user_embedding.weight[0].zero_()
+            self.item_embedding.weight[0].zero_()
+
+    def encode(self):
+        initial = torch.cat((self.user_embedding.weight, self.item_embedding.weight), dim=0)
+        nodes = self.gcn(initial)
+        return nodes[: self.n_user_nodes], nodes[self.n_user_nodes :]
+
+    def loss(self, batch, target_items):
+        del target_items
+        user_e, item_e = self.encode()
+        users = batch["bpr_user"]
+        if users.numel() == 0:
+            return user_e.new_zeros(())
+        pos = (user_e[users] * item_e[batch["bpr_pos"]]).sum(dim=-1)
+        neg = (user_e[users] * item_e[batch["bpr_neg"]]).sum(dim=-1)
+        bpr = -F.logsigmoid(pos - neg).mean()
+        reg = self.user_embedding.weight.pow(2).sum() + self.item_embedding.weight.pow(2).sum()
+        return bpr + self.gamma * reg
+
+    def rank(self, users, target_items):
+        del target_items
+        user_e, item_e = self.encode()
+        scores = user_e[users.long()] @ item_e.transpose(0, 1)
+        scores[:, 0] = torch.finfo(scores.dtype).min
+        return scores

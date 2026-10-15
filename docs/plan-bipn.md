@@ -1,70 +1,55 @@
 # Plan BIPN
 
-Bài được chọn để lập plan: Behavior-Contextualized Item Preference Modeling, SIGIR 2024.
+Bài: Behavior-Contextualized Item Preference Modeling, SIGIR 2024.
 
-- Bài: https://arxiv.org/abs/2404.18166
-- DOI: https://doi.org/10.1145/3626772.3657696
-- Code gốc: https://github.com/MingshiYan/BIPN
-- Dữ liệu đã xử lý kèm code gốc: https://github.com/MingshiYan/BIPN/blob/main/data.zip
+| | URL |
+|---|---|
+| arXiv | https://arxiv.org/abs/2404.18166 |
+| DOI | https://doi.org/10.1145/3626772.3657696 |
+| Code gốc | https://github.com/MingshiYan/BIPN |
+| Dữ liệu kèm code | https://github.com/MingshiYan/BIPN/blob/main/data.zip |
 
-Khung trong thư mục `bipn/` bám công thức mục 3.2 của bài. Khung này chưa được chạy trên Tmall và chưa so số với repo gốc.
+Khung nằm ở `bipn/`.
 
-## Việc bài tập cần có
+## Phạm vi
 
-1. Chạy BIPN trên Tmall.
-2. Sửa mô hình: thêm trọng số cho từng hành vi trong hàm mất mát, tăng trọng số cart và buy vì click nhiều hơn rất nhiều.
-3. Chạy cùng mô hình trên một bộ thứ hai. Chưa chốt. Đề xuất ở mục dưới. Yelp vẫn là phương án không cần xử lý thêm.
-4. So với LightGCN chỉ trên hành vi đích, cùng cách chia tập.
-5. Điền số đo vào `paper/main.tex`. Chỉ số dùng HR@10 và NDCG@10.
+1. Chạy BIPN trên Tmall: `--model bipn`.
+2. Sửa mô hình: `--model weighted`, tăng phần đóng góp của cart và hành vi đích trong BCE.
+3. Chạy cùng ba mô hình trên Retailrocket.
+4. So với LightGCN chỉ trên hành vi đích: `--model lightgcn`.
+5. Điền HR@10 và NDCG@10 vào `paper/main.tex`. Số của bài báo không ghi thành số của nhóm.
 
-## Mô hình cần trình bày
+Phần lý thuyết trong báo cáo đã viết. Ba mô hình và bộ chuyển Retailrocket đã có trong code. Chưa chạy đủ epoch, nên bảng kết quả vẫn trống.
 
-Hành vi cuối là hành vi đích: mua với Tmall và Taobao, `pos` với Yelp và ML10M.
+## Mô hình
 
-1. Gộp mọi hành vi thành một đồ thị, cạnh có trọng số 1 nếu user và item từng tương tác. Chạy LightGCN. Tầng `l` nhân `1/(l+1)`, `l` bắt đầu từ 0. Bài ghi 2 tầng.
-2. Mạng lọc nhận embedding user, item và one-hot hành vi. Lớp trước dùng sigmoid để lọc user. Lớp giữa dùng tanh để ra sở thích theo món. Lớp sau dùng sigmoid để lọc lại vector đó.
-3. Với hành vi đích, cộng các vector sở thích của những món user đã tương tác. Song song, chạy LightGCN trên riêng đồ thị hành vi đích, lấy embedding đã gộp ở bước 1 làm đầu vào.
-4. Điểm dự đoán là `(1-lambda)` nhân tích vô hướng nhánh sở thích cộng `lambda` nhân tích vô hướng nhánh LightGCN đích. `lambda = 1/N_u`. Nếu user không có tương tác đích trong tập train thì `lambda = 1`, chỉ dùng nhánh LightGCN.
-5. Mất mát là `beta` nhân BCE, `(1-beta)` nhân BPR, cộng L2 trên hai bảng embedding. BCE dùng dạng logits cho ổn định số, cùng mục tiêu với công thức (9).
+Hành vi cuối là hành vi đích. Tmall: `click`, `collect`, `cart`, `buy`. Retailrocket: `view`, `cart`, `buy`.
 
-Tham số mặc định trong khung, lấy từ `main.py` của repo gốc trừ hệ số L2: embedding 64, 2 tầng, beta 0.5, học 0.001, batch 1024, 4 mẫu âm, 200 epoch. `b_tmall.sh` của repo gốc lại dùng học 0.0001, beta 0.3, L2 0.0001 và gắn `cuda:6`. Khi chạy Tmall thật, dùng bộ trong file `.sh`, không dùng `cuda:6`.
+1. Gộp mọi hành vi thành một đồ thị. Cạnh bằng 1 nếu user và item từng tương tác. LightGCN nhân tầng `l` với `1/(l+1)`, `l` bắt đầu từ 0. Mặc định 2 tầng.
+2. Mạng lọc nhận embedding user, item và one-hot hành vi. Lớp trước dùng sigmoid, lớp giữa dùng tanh, lớp sau dùng sigmoid. Cả ba lớp có bias.
+3. Với hành vi đích, cộng các vector sở thích của những món user đã tương tác trong train. Song song, LightGCN chạy trên riêng đồ thị hành vi đích.
+4. Điểm là `(1 - lambda) * (sở thích · item) + lambda * (embedding đích của user · embedding đích của item)`. `lambda = 1 / N_u`. Nếu user không có tương tác đích trong train thì `lambda = 1`.
+5. Mất mát BIPN là `beta * BCE + (1 - beta) * BPR + gamma * L2` trên hai bảng embedding. BCE dùng dạng logits.
 
-## Khác biệt với code gốc
+`--model weighted` giữ nguyên mạng và điểm. Hệ số alpha bằng 2 với cart và hành vi đích, bằng 1 với hành vi còn lại. Trọng số từng dòng BCE là `alpha_b * N / (n_b * tổng alpha)`. `n_b` là số dòng BCE của hành vi đó, `N` là tổng số dòng. Phần đóng góp kỳ vọng của mỗi hành vi tỉ lệ với alpha.
 
-Cần nhớ khi đối chiếu số, vì hai bên không giống từng dòng.
+`--model lightgcn` chỉ dùng đồ thị hành vi đích, điểm là tích vô hướng sau LightGCN, mất mát là BPR cộng L2. Không có BCE và không dùng `beta`.
 
-- Code gốc gộp lớp lọc trước và lớp lọc sau vào một ma trận, không có bias. Bài có bias. Khung này làm ba lớp riêng, có bias, đúng bài.
-- Code gốc chuẩn hóa thêm từng vector sau mỗi tầng LightGCN và cộng tầng đó hai lần. Bài chỉ nhân `1/(l+1)`. Khung theo bài.
-- HR trong code gốc bằng 1 nếu top K có ít nhất một món đúng, rồi lấy trung bình theo user. Docstring của hàm đó viết một công thức khác. Khung theo code đang chạy.
-- NDCG dùng độ liên quan 0 hoặc 1 và mẫu số `log2(vị trí+1)`, rồi chia cho IDCG của `min(số món đúng, K)`.
-- L2 trong khung là tổng bình phương hai bảng embedding. Gamma mặc định `1e-4`.
+## Khác code gốc
 
-## Thứ tự làm
+Số của khung có thể lệch repo gốc. Các chỗ cố ý khác:
 
-1. Tạo môi trường có PyTorch. Máy đang dùng Python 3.12, NumPy 2.4.6, SciPy 1.17.1, chưa có PyTorch ở lần kiểm tra này. Không cài bộ `torch==1.12.1+cu113` của repo gốc lên Python 3.12.
-2. Tải `data.zip` từ repo BIPN, giải nén. Zip có file thô, chưa có `pos_sampling.txt`. Khung này không cần file đó. Cần `count.txt`, từng file hành vi, `test.txt` và `validation.txt`.
-3. Chạy `--smoke` để chắc môi trường. Sau đó chạy 1 epoch Tmall trên CPU hoặc GPU chỉ để thấy loss giảm dần, rồi mới chạy đủ epoch.
-4. Ghi HR@10 và NDCG@10 trên validation và test. Chọn epoch theo validation, báo số trên test của epoch đó.
-5. Thêm trọng số hành vi vào BCE. Giữ nguyên phần còn lại. Chạy lại Tmall.
-6. Viết vòng LightGCN chỉ trên `buy.txt` của cùng thư mục Tmall. Cùng embedding, cùng số tầng, cùng cách chấm HR và NDCG.
-7. Lặp ba mô hình trên Retailrocket sau khi thành viên còn lại xác nhận. Hành vi dự kiến là xem, giỏ, mua. File Kaggle chưa tải, nên tên cột và cách chia tập chưa có.
-8. Điền bảng trong `paper/main.tex`. Không ghi số của bài báo thành số của nhóm.
+- Code gốc gộp hai lớp lọc vào một ma trận và không có bias. Khung làm ba lớp có bias, theo bài.
+- Code gốc chuẩn hóa thêm sau mỗi tầng và cộng tầng đó hai lần. Khung chỉ nhân `1/(l+1)`.
+- HR bằng 1 nếu top K có ít nhất một món đúng, rồi lấy trung bình theo user. Cách này theo code đánh giá của repo, không theo docstring của hàm đó.
+- NDCG dùng độ liên quan 0 hoặc 1 và `log2(vị trí + 1)`.
+- L2 là tổng bình phương hai bảng embedding. `gamma` mặc định `1e-4`. `weight_decay` của Adam bằng 0 để hệ số này không bị tính hai lần.
 
-## Dữ liệu đã kiểm trong zip
+## Dữ liệu
 
-`count.txt` của Tmall là 41.738 user và 11.953 item. Dòng đầu `click.txt` là `1 6674`, dòng đầu `buy.txt` là `1 8`. `buy.txt` có 181.428 dòng, `test.txt` 31.572 dòng, `validation.txt` 74.158 dòng. Đây là phần trong file zip, không phải toàn bộ số mua 255.586 của Table 1.
+Cách tải và giải nén: [data/README.md](../data/README.md). Không dùng log Tianchi 140281. Log đó khoảng 1,33 tỷ dòng, khác bộ 41.738 user trong `data.zip`.
 
-Yelp trong cùng zip có `tip.txt`, `neg.txt`, `neutral.txt`, `pos.txt`.
-
-Không dùng file Tianchi 140281 cho lần chạy này. File đó là log Tmall khoảng 1,33 tỷ dòng, khác bộ 41.738 user trong code.
-
-## Bộ dữ liệu thứ hai
-
-Đã ghi nhận Retailrocket, https://www.kaggle.com/datasets/retailrocket/ecommerce-dataset. Trang mở được khi kiểm tra ngày 10/10/2026. Thành viên còn lại chưa xác nhận. Câu hỏi nằm ở [docs/cau-hoi-can-xac-nhan.md](cau-hoi-can-xac-nhan.md).
-
-Table 1 của bài MBHT ghi bản đã lọc: 11.649 user, 36.223 item, 87.822 tương tác, hành vi buy, cart, pv. Đó là số của bài MBHT, không phải số đếm của nhóm. File Kaggle chưa tải. Bộ này không có trong `data.zip` của BIPN và không có trong bốn bộ thí nghiệm của bài BIPN.
-
-Bốn bộ trong zip, đếm ngày 12/10/2026. User và item lấy từ `count.txt`. Số dòng là từng file train, không cộng `test.txt` hay `validation.txt`.
+Số dòng train không cộng `test.txt` hay `validation.txt`. Tmall, Taobao, Yelp và ML10M đếm từ zip ngày 12/10/2026. Retailrocket là bản đã chuyển từ `events.csv` ngày 15/10/2026.
 
 | Bộ | User | Item | Dòng train | Test | Validation |
 |---|---:|---:|---|---:|---:|
@@ -72,33 +57,16 @@ Bốn bộ trong zip, đếm ngày 12/10/2026. User và item lấy từ `count.t
 | Taobao | 48.749 | 39.493 | view 1.548.162, cart 193.747, buy 162.273 | 48.749 | 48.749 |
 | Yelp | 19.800 | 22.734 | tip 285.673, neg 198.106, neutral 238.880, pos 657.926 | 10.000 | 19.417 |
 | ML10M | 67.788 | 8.704 | neg 1.370.897, neutral 3.580.155, pos 4.903.210 | 10.000 | 67.774 |
-| Retailrocket | 11.649 | 36.223 | 87.822 tương tác sau lọc, theo Table 1 bài MBHT | chưa có | chưa có |
+| Retailrocket | 11.719 | 31.839 | view 88.304, cart 22.716, buy 8.666 | 11.719 | 885 |
 
-Retailrocket nhỏ hơn Tmall và cùng kiểu hành vi xem, giỏ, mua. Yelp và ML10M đã nằm trong bài BIPN, hành vi là mức đánh giá chứ không phải xem–giỏ–mua. Taobao cùng miền mua sắm với Tmall và đã có sẵn trong zip. ML10M có 9.854.262 dòng train, nặng nhất trong bốn bộ.
+Table 1 của bài MBHT ghi một bản Retailrocket khác: 11.649 user, 36.223 item, 87.822 tương tác. Không dùng các số đó làm số của nhóm.
 
-## Điều kiện máy
+`buy.txt` của Tmall có 181.428 dòng. Đó không phải 255.586 lượt mua trong Table 1 của bài BIPN.
 
-Máy đang mở repo đã kiểm bằng lệnh: NVIDIA GeForce RTX 3050 Ti Laptop GPU, 4096 MiB, driver 617.42, RAM 31,7 GB. `bipn/.venv` đang là PyTorch bản CPU, nên GPU này chưa được dùng. Chưa đo thời gian một epoch Tmall.
+## Máy
 
-Thành viên còn lại cho biết máy của họ là Idealpad 5 Pro, Core Ultra 9 185H, RTX 4050, 32 GB RAM. Cấu hình này là lời kể, chưa kiểm trên máy đó.
+Máy đang mở repo, đã kiểm bằng lệnh: RTX 3050 Ti Laptop, 4096 MiB, driver 617.42, RAM 31,7 GB. `bipn/.venv` là PyTorch 2.14.1+cpu. GPU chưa được dùng vì chưa cài bản CUDA.
 
-Bản đủ epoch chạy trên một trong hai GPU. Chưa chọn máy nào giữ bản train dài.
+Máy còn lại, theo lời thành viên: Idealpad 5 Pro, Core Ultra 9 185H, RTX 4050, 32 GB RAM. Chưa kiểm trên máy đó.
 
-1. GPU máy RTX 3050 Ti. Cài bản PyTorch có CUDA, rồi `--device cuda`. Embedding 64, 2 tầng, khoảng 42 nghìn user và 12 nghìn item vừa bộ nhớ 4 GB. Chưa cài bản CUDA.
-2. GPU máy RTX 4050 ở trên. Chưa cài gì trên máy đó.
-3. CPU máy RTX 3050 Ti chỉ để thử vài epoch. `--smoke` đã chạy. Tmall với 4 mẫu âm tạo khoảng 11,1 triệu dòng BCE mỗi epoch, cỡ 2 GB RAM. RAM 31,7 GB chứa được. Chưa biết 200 epoch mất bao lâu.
-
-`data_set.py` của repo gốc gọi `torch.cuda.manual_seed` lúc import. Khung này không gọi dòng đó, nên chạy được trên CPU.
-
-## Đã kiểm trên máy này
-
-Ngày 12/10/2026, `bipn/.venv` có PyTorch 2.14.1+cpu và NumPy 2.5.4. `python main.py --smoke` chạy xong 2 epoch trên dữ liệu giả: loss 0.5902 rồi 0.5755, có in HR và NDCG. Số này không phải kết quả Tmall.
-
-Loader và HR/NDCG đã đối chiếu trên một thư mục tạm và một ma trận relevance biết trước. HR@1 của ma trận đó là 0.5.
-
-## Chưa làm trong khung
-
-- Chưa train Tmall. Chưa tải Retailrocket.
-- Chưa có trọng số hành vi.
-- Chưa có script LightGCN đối chứng.
-- Chưa điền kết quả vào báo cáo.
+Tmall với 4 mẫu âm tạo khoảng 11,1 triệu dòng BCE mỗi epoch, cỡ 2 GB RAM cho riêng danh sách đó. Chưa đo thời gian 200 epoch.

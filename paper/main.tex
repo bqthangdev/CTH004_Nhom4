@@ -26,56 +26,146 @@
 \maketitle
 
 \begin{abstract}
-Báo cáo này trình bày một thí nghiệm gợi ý đa hành vi: chạy lại một mô hình đã công bố, chỉnh sửa mô hình, đánh giá trên một bộ dữ liệu khác và so với một mô hình đối chứng.
-Phương pháp, số liệu và kết luận sẽ được điền sau khi nhóm chạy thí nghiệm.
-Các ô trong bảng dưới đây là chỗ trống, không phải kết quả đo được.
+Báo cáo triển khai BIPN cho gợi ý đa hành vi, thêm trọng số cho hành vi giỏ hàng và hành vi đích, rồi so với LightGCN chỉ dùng hành vi đích.
+Bộ thứ nhất là Tmall trong dữ liệu công bố kèm code. Bộ thứ hai là Retailrocket.
+Bảng kết quả còn trống vì nhóm chưa chạy đủ epoch.
 \keywords{Gợi ý đa hành vi \and Lọc cộng tác \and Đồ thị}
 \end{abstract}
 
 \section{Giới thiệu}
-Người dùng trên sàn thương mại thường có nhiều hành vi trên cùng một món hàng, ví dụ xem, thêm vào giỏ và mua.
-Hành vi mua thường ít hơn hành vi xem.
-Mô hình đa hành vi dùng các hành vi phụ để hỗ trợ dự đoán hành vi đích~\cite{yan2024bipn}.
+Người dùng trên sàn thương mại thường xem, thêm vào giỏ, rồi mới mua.
+Lượt mua ít hơn lượt xem, nên một mô hình chỉ học trên hành vi mua bỏ qua phần lớn tín hiệu còn lại.
+BIPN dùng các hành vi phụ lúc huấn luyện và chỉ xếp hạng theo hành vi đích~\cite{yan2024bipn}.
 
-Nhóm đang triển khai BIPN~\cite{yan2024bipn}.
-CRGCN và MBHT~\cite{yang2022mbht} đã được đối chiếu rồi để lại.
+Bài tập yêu cầu chạy lại một mô hình đã công bố, sửa mô hình, đổi một bộ dữ liệu, và so với một mô hình khác.
+Nhóm chọn BIPN.
+CRGCN và MBHT~\cite{yang2022mbht} đã được đối chiếu rồi không dùng.
+Phần sửa là tăng trọng số của hành vi giỏ hàng và hành vi đích trong hàm mất mát.
+Mô hình đối chứng là LightGCN~\cite{he2020lightgcn} trên riêng đồ thị hành vi đích.
 
 \section{Phương pháp}
-Phần này mô tả mô hình được chọn, phần sẽ sửa, và mô hình dùng để so sánh.
-Phần mô tả chi tiết sẽ được viết khi thí nghiệm chạy xong.
+\subsection{Bài toán}
+Có tập người dùng, tập món hàng và một danh sách hành vi.
+Hành vi cuối là hành vi đích: mua với Tmall và Retailrocket.
+Mỗi hành vi gồm các cặp người dùng và món hàng.
+Mục tiêu là xếp hạng món hàng theo khả năng xảy ra hành vi đích.
 
-Một dạng hàm mất mát xếp hạng theo cặp, dùng trong BIPN, là
+Chỉ số người dùng và món hàng bắt đầu từ 1.
+Chỉ số 0 để đệm, không được xếp hạng.
+
+\subsection{BIPN}
+Mô hình có ba khối, theo mục 3.2 của bài BIPN.
+
+\subsubsection{Đồ thị gộp}
+Mọi hành vi được gộp thành một đồ thị hai phía.
+Nếu người dùng và món hàng từng tương tác ở bất kỳ hành vi nào thì có một cạnh.
+Cạnh được chuẩn hóa đối xứng theo bậc của hai đỉnh.
+
+Embedding ban đầu của người dùng và món hàng được lan truyền bằng LightGCN.
+Tầng \(l\), với \(l\) bắt đầu từ 0, được nhân \(1/(l+1)\) rồi cộng lại.
+Khung dùng 2 tầng lan truyền, đúng số tầng trong bài.
+
+\subsubsection{Sở thích theo hành vi}
+Với một bộ ba người dùng \(u\), món \(i\) và hành vi \(b\), mạng lọc nhận embedding của ba thành phần đó.
+Lớp thứ nhất dùng sigmoid để ra một cửa, rồi nhân cửa này với embedding người dùng.
+Lớp thứ hai dùng tanh trên người dùng đã lọc, món hàng và hành vi, ra vector sở thích.
+Lớp thứ ba dùng sigmoid trên bộ ba ban đầu để lọc lại vector đó.
+Ba lớp đều có hệ số tự do và bias.
+
+Với hành vi đích, các vector sở thích của những món người dùng đã tương tác trong tập train được cộng lại, không lấy trung bình.
+Gọi số món đó là \(N_u\).
+
+Song song, một LightGCN thứ hai chạy trên riêng đồ thị hành vi đích.
+Đầu vào của nó là embedding đã gộp ở bước trước.
+
+\subsubsection{Điểm dự đoán}
+Điểm của người dùng \(u\) với món \(i\) là
 \begin{equation}
-\mathcal{L}_{\mathrm{bpr}} = -\sum_{(u,i,j)\in\mathcal{O}}\ln\sigma(y_{ui}-y_{uj}).
+y_{ui} = (1-\lambda_u)\,(\mathbf{p}_u \cdot \mathbf{e}_i) + \lambda_u\,(\hat{\mathbf{e}}_u \cdot \hat{\mathbf{e}}_i).
 \end{equation}
-Công thức này được ghi lại từ bài báo, để kiểm tra môi trường toán.
-Hệ số và cách kết hợp với các hàm mất mát khác sẽ được nêu khi mô hình được chốt.
+\(\mathbf{p}_u\) là tổng vector sở thích, \(\mathbf{e}_i\) là embedding món sau bước gộp.
+\(\hat{\mathbf{e}}_u\) và \(\hat{\mathbf{e}}_i\) là embedding sau LightGCN của hành vi đích.
+\(\lambda_u = 1/N_u\) khi \(N_u > 0\).
+Khi người dùng không có tương tác đích trong tập train, \(\lambda_u = 1\), điểm chỉ còn nhánh LightGCN.
+
+\subsubsection{Hàm mất mát}
+Mất mát là tổ hợp BCE, BPR và L2 trên hai bảng embedding:
+\begin{equation}
+\mathcal{L} = \beta \mathcal{L}_{\mathrm{bce}} + (1-\beta)\mathcal{L}_{\mathrm{bpr}} + \gamma(\lVert E_u \rVert^2 + \lVert E_i \rVert^2).
+\end{equation}
+BCE lấy logit là tích vô hướng giữa vector sở thích và embedding món.
+BPR trên một món đích dương và một món âm là
+\begin{equation}
+\mathcal{L}_{\mathrm{bpr}} = -\ln\sigma(y_{ui}-y_{uj}).
+\end{equation}
+\(\beta = 0{,}5\) và \(\gamma = 10^{-4}\) trong khung này.
+Mẫu âm của BCE và BPR là món người dùng chưa tương tác ở mọi hành vi.
+
+\subsection{Trọng số hành vi}
+Ở BIPN gốc, BCE lấy trung bình trên mọi dòng mẫu.
+Trên Tmall, click có 1.813.498 dòng train còn cart chỉ có 1.996 dòng, nên click át các hành vi còn lại.
+
+Bản sửa không đổi mạng và không đổi điểm dự đoán.
+Mỗi hành vi được tính trung bình BCE riêng.
+Hành vi cart và hành vi đích có hệ số \(\alpha = 2\).
+Hành vi còn lại có \(\alpha = 1\).
+Trọng số từng dòng được chọn để phần đóng góp kỳ vọng của một hành vi tỉ lệ với \(\alpha\) của hành vi đó, đồng thời BCE vẫn cùng thang với bản không trọng số.
+BIPN gốc giữ nguyên trung bình không trọng số, để hai bản so được với nhau.
+
+\subsection{LightGCN đối chứng}
+LightGCN đối chứng chỉ dựng đồ thị của hành vi đích và lan truyền trên đồ thị đó.
+Điểm là tích vô hướng của embedding người dùng và món sau lan truyền.
+Mất mát là BPR cộng cùng hệ số L2, không có BCE và không có mạng lọc.
+
+Cách trộn tầng vẫn là \(1/(l+1)\), cùng khung BIPN.
+Bài LightGCN gốc trộn đều \(1/(L+1)\).
+Giữ cùng cách trộn để chênh lệch đến từ việc có dùng hành vi phụ hay không.
+Cùng kích thước embedding, cùng số tầng, cùng cách chia tập, cùng HR@10 và NDCG@10.
 
 \section{Thí nghiệm}
 \subsection{Dữ liệu}
-Bảng~\ref{tab:data} là khung thống kê.
-Các ô để trống cho đến khi nhóm đếm trên dữ liệu mình chạy.
+Tmall lấy từ \texttt{data.zip} công bố kèm code BIPN.
+Đếm ngày 12/10/2026: 41.738 người dùng, 11.953 món, và 2.218.436 dòng train trên bốn file hành vi.
+\texttt{test.txt} có 31.572 dòng, \texttt{validation.txt} có 74.158 dòng.
+Các file này đã được chia sẵn. \texttt{data\_process.py} trong zip không tạo lại phép chia.
+
+Retailrocket dùng file \texttt{events.csv} công khai, với cột \texttt{timestamp}, \texttt{visitorid}, \texttt{event}, \texttt{itemid} và \texttt{transactionid}.
+Sự kiện \texttt{view}, \texttt{addtocart} và \texttt{transaction} được map thành view, cart và buy.
+Bản mô tả dữ liệu ghi khoảng 2.756.101 sự kiện từ 1.407.580 visitor.
+Nhóm chỉ giữ visitor có ít nhất một transaction, rồi chia theo thời gian: món mua cuối vào test, món kế cuối vào validation nếu còn ít nhất ba món mua.
+View và cart chỉ vào train khi xảy ra trước món mua bị tách ra sớm nhất.
+Sau khi lọc, còn 11.719 người dùng và 31.839 món.
+Dòng train là 88.304 view, 22.716 cart và 8.666 buy.
+Validation chỉ có 885 người dùng, vì phần lớn người mua không đủ ba món khác nhau để tách cả validation và test.
 
 \begin{table}[t]
-\caption{Thống kê dữ liệu sau khi nhóm xử lý. Các ô chưa có số đo.}
+\caption{Thống kê dòng train sau khi nhóm xử lý.}
 \label{tab:data}
 \centering
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrrrl}
 \hline
 Dữ liệu & User & Item & Tương tác & Hành vi \\
 \hline
-Bộ 1 & -- & -- & -- & -- \\
-Bộ 2 & -- & -- & -- & -- \\
+Tmall & 41738 & 11953 & 2218436 & click, collect, cart, buy \\
+Retailrocket & 11719 & 31839 & 119686 & view, cart, buy \\
 \hline
 \end{tabular}
 \end{table}
 
 \subsection{Thiết lập}
-Các mục sẽ điền: cách chia tập huấn luyện và kiểm tra, kích thước embedding, hệ số học, số epoch, và thiết bị train.
-Chỉ số dự kiến là HR@K và NDCG@K, cùng thang đo mà bài báo gốc sử dụng.
+Khung dùng embedding 64, 2 tầng, batch 1024, 4 mẫu âm, học 0{,}001, 200 epoch và seed 2021.
+Đây là bộ mặc định trong \texttt{main.py} của repo BIPN, trừ hệ số L2 đang là \(10^{-4}\).
+File \texttt{b\_tmall.sh} của repo gốc dùng học 0{,}0001 và \(\beta = 0{,}3\), đồng thời gắn sẵn \texttt{cuda:6}.
+Bản chạy đủ epoch chưa thực hiện, nên chưa chọn lại bộ trong file shell.
+
+HR@10 bằng 1 nếu top 10 có ít nhất một món đúng, rồi lấy trung bình theo người dùng.
+NDCG@10 dùng độ liên quan nhị phân.
+Cách tính này theo code đánh giá của repo BIPN.
 
 \subsection{Kết quả}
-Bảng~\ref{tab:result} so sánh mô hình gốc, bản đã sửa, và mô hình đối chứng trên hai bộ dữ liệu.
+Bảng~\ref{tab:result} để chỗ cho ba mô hình trên hai bộ dữ liệu.
+Các ô chưa có số đo của nhóm.
+Số trong bài báo gốc không được ghi vào bảng này.
 
 \begin{table}[t]
 \caption{Kết quả trên tập kiểm tra. Các ô chưa có số đo.}
@@ -85,19 +175,21 @@ Bảng~\ref{tab:result} so sánh mô hình gốc, bản đã sửa, và mô hìn
 \hline
 Dữ liệu & Mô hình & HR@10 & NDCG@10 \\
 \hline
-Bộ 1 & Mô hình gốc & -- & -- \\
-Bộ 1 & Mô hình đã sửa & -- & -- \\
-Bộ 1 & Mô hình đối chứng & -- & -- \\
-Bộ 2 & Mô hình gốc & -- & -- \\
-Bộ 2 & Mô hình đã sửa & -- & -- \\
-Bộ 2 & Mô hình đối chứng & -- & -- \\
+Tmall & BIPN & -- & -- \\
+Tmall & BIPN có trọng số & -- & -- \\
+Tmall & LightGCN & -- & -- \\
+Retailrocket & BIPN & -- & -- \\
+Retailrocket & BIPN có trọng số & -- & -- \\
+Retailrocket & LightGCN & -- & -- \\
 \hline
 \end{tabular}
 \end{table}
 
 \section{Kết luận}
-Phần này sẽ nêu mô hình nào tốt hơn trên từng bộ dữ liệu, và giới hạn của thí nghiệm.
-Chưa có kết luận vì chưa có số đo.
+Khung đã có đủ ba mô hình mà bài tập yêu cầu: BIPN, BIPN có trọng số hành vi, và LightGCN trên hành vi đích.
+Bộ Tmall đã đối chiếu số dòng với file công bố.
+Bộ Retailrocket đã chuyển từ \texttt{events.csv}. Validation của bộ này chỉ có 885 người dùng.
+Vì chưa có HR@10 và NDCG@10, báo cáo chưa kết luận mô hình nào tốt hơn.
 
 \begin{credits}
 \subsubsection*{\ackname}
