@@ -15,9 +15,9 @@ class Config:
     def __init__(self):
         self.embedding_size = 64
         self.n_layers = 2
-        self.beta = 0.5
+        self.beta = 0.3
         self.gamma = 1e-4
-        self.lr = 1e-3
+        self.lr = 1e-4
         self.weight_decay = 0.0
         self.batch_size = 1024
         self.neg_count = 4

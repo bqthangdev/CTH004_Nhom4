@@ -98,7 +98,7 @@ BPR trên một món đích dương và một món âm là
 \begin{equation}
 \mathcal{L}_{\mathrm{bpr}} = -\ln\sigma(y_{ui}-y_{uj}).
 \end{equation}
-\(\beta = 0{,}5\) và \(\gamma = 10^{-4}\) trong khung này.
+\(\beta = 0{,}3\) và \(\gamma = 10^{-4}\) trong lần chạy theo lệnh Tmall của repo gốc.
 Mẫu âm của BCE và BPR là món người dùng chưa tương tác ở mọi hành vi.
 
 \subsection{Trọng số hành vi}
@@ -153,10 +153,10 @@ Retailrocket & 11719 & 31839 & 119686 & view, cart, buy \\
 \end{table}
 
 \subsection{Thiết lập}
-Khung dùng embedding 64, 2 tầng, batch 1024, 4 mẫu âm, học 0{,}001, 200 epoch và seed 2021.
-Đây là bộ mặc định trong \texttt{main.py} của repo BIPN, trừ hệ số L2 đang là \(10^{-4}\).
-File \texttt{b\_tmall.sh} của repo gốc dùng học 0{,}0001 và \(\beta = 0{,}3\), đồng thời gắn sẵn \texttt{cuda:6}.
-Bản chạy đủ epoch chưa thực hiện, nên chưa chọn lại bộ trong file shell.
+Lần chạy BIPN dùng bộ trong \texttt{b\_tmall.sh} của repo gốc: embedding 64, 2 tầng, batch 1024, 4 mẫu âm, học 0{,}0001, \(\beta = 0{,}3\), L2 \(10^{-4}\), 200 epoch và seed 2021.
+File shell gắn \texttt{cuda:6}. Máy của nhóm dùng GPU sẵn có, không dùng chỉ số đó.
+\texttt{main.py} của repo gốc để sẵn học 0{,}001 và \(\beta = 0{,}5\), nhưng lệnh Tmall ghi đè hai số này.
+Bản cải tiến chỉ đổi trọng số hành vi. Các tham số trên giữ nguyên.
 
 HR@10 bằng 1 nếu top 10 có ít nhất một món đúng, rồi lấy trung bình theo người dùng.
 NDCG@10 dùng độ liên quan nhị phân.

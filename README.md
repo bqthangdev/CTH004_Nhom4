@@ -4,11 +4,14 @@ Bài tập nhóm môn Chuyên đề HTTT Thông minh, Khoa HTTT, 2026. Giảng v
 
 Phương pháp đang triển khai là BIPN (SIGIR 2024). Bộ dữ liệu là Tmall và Retailrocket. Mô hình đối chứng là LightGCN trên hành vi đích.
 
+Bắt đầu tại [docs/huong-dan-chay.md](docs/huong-dan-chay.md), làm lần lượt từ mục 1. Dữ liệu không nằm trong git.
+
 ## Cấu trúc
 
 | Đường dẫn | Nội dung |
 |---|---|
-| [bipn](bipn) | Huấn luyện và chuyển dữ liệu Retailrocket. |
+| [bipn](bipn) | Huấn luyện bản cải tiến, LightGCN và Retailrocket. |
+| [official-bipn](official-bipn) | Code BIPN gốc để chạy lại trên Tmall. Các chỗ đã sửa nằm ở [official-bipn/SUA-DOI.md](official-bipn/SUA-DOI.md). |
 | [data](data) | Hai bộ dữ liệu. Xem [data/README.md](data/README.md). |
 | [paper](paper) | Báo cáo LNCS. |
 | [docs](docs) | Đề xuất phương án, plan và câu còn mở. |
@@ -23,10 +26,6 @@ Nhóm 2 sinh viên: chạy lại một phương pháp trong danh sách trên, s�
 - Kết quả thí nghiệm: 70%
 
 Tên trên báo cáo hiện là NVA và NVB. Email và tên trường đầy đủ chưa điền trong [paper/main.tex](paper/main.tex).
-
-## Chạy
-
-Hướng dẫn cài đặt, sáu lần chạy và ý nghĩa tham số: [docs/huong-dan-chay.md](docs/huong-dan-chay.md).
 
 ## Báo cáo
 
@@ -51,6 +50,7 @@ pdflatex -interaction=nonstopmode main.tex
 |---|---|
 | [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md) | So sánh BIPN, CRGCN và MBHT. |
 | [docs/plan-bipn.md](docs/plan-bipn.md) | Plan BIPN. |
+| [docs/cai-tien.md](docs/cai-tien.md) | Phép cải tiến: trọng số BCE cho cart và hành vi đích. |
 | [docs/huong-dan-chay.md](docs/huong-dan-chay.md) | Cách chạy và các tham số. |
 | [docs/cau-hoi-can-xac-nhan.md](docs/cau-hoi-can-xac-nhan.md) | Mục đã chốt và mục còn mở. |
 | [docs/memory.md](docs/memory.md) | Hiện trạng và nhật ký. |
@@ -68,7 +68,7 @@ Behavior-Contextualized Item Preference Modeling. SIGIR 2024.
 | Code | https://github.com/MingshiYan/BIPN |
 | Dữ liệu kèm code | https://github.com/MingshiYan/BIPN/blob/main/data.zip |
 
-`data.zip` gồm Tmall, Taobao, Yelp và ML10M. Cách giải nén nằm ở [data/README.md](data/README.md).
+`data.zip` gồm Tmall, Taobao, Yelp và ML10M. Cách tải và giải nén nằm ở [docs/huong-dan-chay.md](docs/huong-dan-chay.md).
 
 | Bộ dữ liệu | URL | Ghi chú |
 |---|---|---|

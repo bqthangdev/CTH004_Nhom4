@@ -9,5 +9,10 @@ paper/*.toc
 paper/*.synctex.gz
 **/__pycache__/
 bipn/.venv/
+bipn/logs/
+bipn/checkpoints/
+official-bipn/data.zip
+official-bipn/check_point/*
+!official-bipn/check_point/.gitkeep
 data/*
 !data/README.md

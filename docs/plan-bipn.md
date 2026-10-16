@@ -47,7 +47,7 @@ Số của khung có thể lệch repo gốc. Các chỗ cố ý khác:
 
 ## Dữ liệu
 
-Cách tải và giải nén: [data/README.md](../data/README.md). Không dùng log Tianchi 140281. Log đó khoảng 1,33 tỷ dòng, khác bộ 41.738 user trong `data.zip`.
+Cách tải và giải nén: [huong-dan-chay.md](huong-dan-chay.md). Không dùng log Tianchi 140281. Log đó khoảng 1,33 tỷ dòng, khác bộ 41.738 user trong `data.zip`.
 
 Số dòng train không cộng `test.txt` hay `validation.txt`. Tmall, Taobao, Yelp và ML10M đếm từ zip ngày 12/10/2026. Retailrocket là bản đã chuyển từ `events.csv` ngày 15/10/2026.
 

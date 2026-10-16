@@ -1,2 +1,6 @@
 torch>=2.2
 numpy>=1.26
+loguru>=0.7
+scipy>=1.11
+tqdm>=4.66
+scikit-learn>=1.4
