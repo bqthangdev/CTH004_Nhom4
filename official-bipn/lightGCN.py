@@ -23,7 +23,7 @@ class LightGCN(nn.Module):
         self.user_count = n_users
         self.item_count = n_items
         self.interaction_matrix = interaction_matrix
-        self.A_adj_matrix = self._get_a_adj_matrix()
+        self.A_adj_matrix = self._get_a_adj_matrix().to(self.device)
 
 
     def _get_a_adj_matrix(self):
@@ -36,7 +36,10 @@ class LightGCN(nn.Module):
         inter_matrix_t = self.interaction_matrix.transpose()
         data_dict = dict(zip(zip(inter_matrix.row, inter_matrix.col + self.user_count), [1] * inter_matrix.nnz))
         data_dict.update(dict(zip(zip(inter_matrix_t.row + self.user_count, inter_matrix_t.col), [1] * inter_matrix_t.nnz)))
-        A._update(data_dict)
+        if hasattr(A, '_update'):
+            A._update(data_dict)
+        else:
+            A.update(data_dict)
         sum_list = (A > 0).sum(axis=1)
         diag = np.array(sum_list.flatten())[0] + 1e-7
         diag = np.power(diag, -0.5)
@@ -54,7 +57,7 @@ class LightGCN(nn.Module):
 
         result = [in_embs]
         for i in range(self.n_layers):
-            in_embs = torch.sparse.mm(self.A_adj_matrix.to(self.device), in_embs)
+            in_embs = torch.sparse.mm(self.A_adj_matrix, in_embs)
             in_embs = F.normalize(in_embs, dim=-1)
             result.append(in_embs / (i + 1))
             result.append(in_embs)

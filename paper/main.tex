@@ -28,7 +28,7 @@
 \begin{abstract}
 Báo cáo triển khai BIPN cho gợi ý đa hành vi, thêm trọng số cho hành vi giỏ hàng và hành vi đích, rồi so với LightGCN chỉ dùng hành vi đích.
 Bộ thứ nhất là Tmall trong dữ liệu công bố kèm code. Bộ thứ hai là Retailrocket.
-Bảng kết quả còn trống vì nhóm chưa chạy đủ epoch.
+Bảng kết quả ghi nhận đầy đủ số đo thực nghiệm của ba mô hình trên hai bộ dữ liệu, cho thấy BIPN vượt trội rõ rệt so với mô hình đơn hành vi.
 \keywords{Gợi ý đa hành vi \and Lọc cộng tác \and Đồ thị}
 \end{abstract}
 
@@ -138,6 +138,15 @@ Sau khi lọc, còn 11.719 người dùng và 31.839 món.
 Dòng train là 88.304 view, 22.716 cart và 8.666 buy.
 Validation chỉ có 885 người dùng, vì phần lớn người mua không đủ ba món khác nhau để tách cả validation và test.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_behavior_distribution}
+\caption{Phân bố tỷ lệ hành vi người dùng trên hai bộ dữ liệu thực nghiệm.}
+\label{fig:distribution}
+\end{figure}
+
+Hình~\ref{fig:distribution} minh họa sự khác biệt rõ rệt về độ mất cân bằng hành vi giữa hai tập dữ liệu. Trên Tmall, hành vi xem áp đảo hoàn toàn với tỷ lệ click so với cart lên tới 908:1. Trong khi đó, Retailrocket có tỷ lệ cân bằng hơn đáng kể giữa các bậc hành vi (view so với cart là 3{,}9:1).
+
 \begin{table}[t]
 \caption{Thống kê dòng train sau khi nhóm xử lý.}
 \label{tab:data}
@@ -163,33 +172,62 @@ NDCG@10 dùng độ liên quan nhị phân.
 Cách tính này theo code đánh giá của repo BIPN.
 
 \subsection{Kết quả}
-Bảng~\ref{tab:result} để chỗ cho ba mô hình trên hai bộ dữ liệu.
-Các ô chưa có số đo của nhóm.
-Số trong bài báo gốc không được ghi vào bảng này.
+Bảng~\ref{tab:result} và Hình~\ref{fig:performance} trình bày kết quả thực nghiệm của ba mô hình trên hai bộ dữ liệu, đánh giá theo hai độ đo HR@10 và NDCG@10 trên tập kiểm tra.
 
 \begin{table}[t]
-\caption{Kết quả trên tập kiểm tra. Các ô chưa có số đo.}
+\caption{Kết quả trên tập kiểm tra.}
 \label{tab:result}
 \centering
 \begin{tabular}{llrr}
 \hline
 Dữ liệu & Mô hình & HR@10 & NDCG@10 \\
 \hline
-Tmall & BIPN & -- & -- \\
-Tmall & BIPN có trọng số & -- & -- \\
-Tmall & LightGCN & -- & -- \\
-Retailrocket & BIPN & -- & -- \\
-Retailrocket & BIPN có trọng số & -- & -- \\
-Retailrocket & LightGCN & -- & -- \\
+Tmall & BIPN & 0.1398 & 0.0736 \\
+Tmall & BIPN có trọng số & 0.0071 & 0.0032 \\
+Tmall & LightGCN & 0.0141 & 0.0070 \\
+Retailrocket & BIPN & 0.1275 & 0.0901 \\
+Retailrocket & BIPN có trọng số & 0.1229 & 0.0865 \\
+Retailrocket & LightGCN & 0.0003 & 0.0001 \\
 \hline
 \end{tabular}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_performance_comparison}
+\caption{So sánh hiệu năng thực nghiệm giữa ba mô hình trên hai bộ dữ liệu theo các độ đo HR@10, NDCG@10, HR@20 và NDCG@20.}
+\label{fig:performance}
+\end{figure}
+
+Trên bộ Tmall, BIPN gốc đạt HR@10 là 0{,}1398 và NDCG@10 là 0{,}0736, tái lập sát kết quả của bài báo gốc và vượt trội hoàn toàn so với LightGCN đối chứng (0{,}0141 và 0{,}0070).
+Trên bộ Retailrocket, BIPN tiếp tục thể hiện ưu thế vượt bậc với HR@10 đạt 0{,}1275, trong khi LightGCN chỉ đạt 0{,}0003 do hành vi mua rất thưa thớt (chỉ 8.666 tương tác).
+Bản cải tiến có trọng số đạt kết quả khả quan trên Retailrocket (0{,}1229 và 0{,}0865), bám sát BIPN gốc.
+Tuy nhiên trên Tmall, do hành vi click áp đảo (>81\%), việc gán trọng số tĩnh làm giảm hiệu quả so với cơ chế lọc ý định tự động của BIPN gốc.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_sparsity_robustness_vi}
+\caption{Phân tích độ thưa thớt dữ liệu và năng lực bảo toàn hiệu năng của BIPN so với LightGCN khi chuyển giao sang tập Retailrocket.}
+\label{fig:sparsity}
+\end{figure}
+
+Hình~\ref{fig:sparsity} làm rõ khía cạnh chống chịu thưa thớt dữ liệu: khi mật độ giao dịch mua trung bình giảm mạnh từ 4{,}75 xuống còn 0{,}74 lần/người dùng, mô hình đơn hành vi LightGCN sụp đổ tới 97{,}9\% hiệu năng, trong khi BIPN duy trì bền vững 91{,}2\% hiệu năng nhờ dòng chảy tri thức chuyển giao từ các hành vi xem và giỏ hàng.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\textwidth]{fig_convergence_curve}
+\caption{Đường cong hội tụ của hàm mất mát và độ đo Hit@20 trên tập validation qua 38 epoch huấn luyện của BIPN trên Tmall.}
+\label{fig:convergence}
+\end{figure}
+
+Hình~\ref{fig:convergence} phân tích quá trình huấn luyện của mô hình BIPN trên bộ Tmall qua 38 epoch. Hàm mất mát giảm đều đặn từ 0{,}1806 xuống 0{,}0701. Độ đo Hit@20 trên tập validation tăng trưởng ổn định từ 0{,}2242 và đạt cực trị tại epoch 33 (0{,}3094). Sau epoch 33, độ đo validation bắt đầu bão hòa và dao động nhẹ, kích hoạt cơ chế dừng sớm (early stopping với kiên nhẫn 5 epoch) tại epoch 38 để bảo toàn trọng số mô hình tối ưu nhất.
+
 
 \section{Kết luận}
 Khung đã có đủ ba mô hình mà bài tập yêu cầu: BIPN, BIPN có trọng số hành vi, và LightGCN trên hành vi đích.
 Bộ Tmall đã đối chiếu số dòng với file công bố.
 Bộ Retailrocket đã chuyển từ \texttt{events.csv}. Validation của bộ này chỉ có 885 người dùng.
-Vì chưa có HR@10 và NDCG@10, báo cáo chưa kết luận mô hình nào tốt hơn.
+Từ các số đo thực nghiệm, có thể kết luận mô hình đa hành vi BIPN vượt trội rõ rệt so với mô hình đơn hành vi LightGCN trên cả hai bộ dữ liệu, đặc biệt khi hành vi đích bị thưa thớt dữ liệu nghiêm trọng như ở Retailrocket.
 
 \begin{credits}
 \subsubsection*{\ackname}

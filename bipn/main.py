@@ -21,10 +21,18 @@ def main():
     parser.add_argument("--model", default="bipn", choices=MODELS)
     parser.add_argument("--device", default="")
     parser.add_argument("--epochs", type=int, default=0)
+    parser.add_argument("--patience", type=int, default=5, help="Dừng sớm sau N epoch không tăng (0 để tắt)")
+    parser.add_argument("--batch_size", type=int, default=0, help="Ghi đè batch_size (0 dùng mặc định 1024)")
     parser.add_argument("--eval", action="store_true", help="Nạp mô hình đã lưu và chấm lại")
     args = parser.parse_args()
 
+    if torch.cuda.is_available():
+        torch.backends.cudnn.benchmark = True
+    torch.set_num_threads(8)
+
     config = Config()
+    if args.batch_size > 0:
+        config.batch_size = args.batch_size
     if args.device:
         config.device = args.device
     elif torch.cuda.is_available():
@@ -54,16 +62,23 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     rng = np.random.default_rng(config.seed)
     best = None
+    best_epoch = 0
+    patience = args.patience if not args.smoke else 0
     for epoch in range(1, config.epochs + 1):
         loss = train_one_epoch(model, data, optimizer, config, rng)
         valid = evaluate(model, data, data.valid, config)
         test = evaluate(model, data, data.test, config)
-        print(f"epoch {epoch} loss {loss:.4f} valid {valid} test {test}")
-        if args.smoke or not is_better(valid, best):
+        print(f"epoch {epoch} loss {loss:.4f} valid {valid} test {test}", flush=True)
+        if args.smoke:
             continue
-        path = save_checkpoint(args.dataset, args.model, model, epoch, valid, test, config)
-        best = valid
-        print(f"save epoch {epoch} {path.name}")
+        if is_better(valid, best):
+            path = save_checkpoint(args.dataset, args.model, model, epoch, valid, test, config)
+            best = valid
+            best_epoch = epoch
+            print(f"save epoch {epoch} {path.name}", flush=True)
+        elif patience > 0 and best_epoch > 0 and (epoch - best_epoch) >= patience:
+            print(f"early stop at epoch {epoch}, best epoch {best_epoch}", flush=True)
+            break
 
 
 def _check(args, config):

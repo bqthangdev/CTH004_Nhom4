@@ -58,7 +58,8 @@ class Trainer(object):
     def train_model(self):
         train_dataset_loader = DataLoader(dataset=self.dataset.behavior_dataset(),
                                           batch_size=self.batch_size,
-                                          shuffle=True)
+                                          shuffle=True,
+                                          pin_memory=True)
 
         # best_result = np.zeros(len(self.topk) * len(self.metrics))
         best_result = 0
@@ -102,7 +103,7 @@ class Trainer(object):
         batch_no = 0
         for batch_index, batch_data in behavior_dataset_iter:
             start = time.time()
-            batch_data = batch_data.to(self.device)
+            batch_data = batch_data.to(self.device, non_blocking=True)
             self.optimizer.zero_grad()
             loss = self.model(batch_data)
             # loss = loss.sum()

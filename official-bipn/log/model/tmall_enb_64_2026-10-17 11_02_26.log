@@ -1,0 +1,13 @@
+2026-10-17 11:03:00.880 | INFO     | __main__:<module>:102 - Namespace(embedding_size=64, reg_weight=0.0001, log_reg=0.3, layers=2, node_dropout=0.75, message_dropout=0.25, omega=1, data_name='tmall', behaviors=['click', 'collect', 'cart', 'buy'], loss_type='bpr', neg_count=4, if_load_model=False, gpu_no=1, topk=[10, 20, 50, 80], metrics=['hit', 'ndcg'], lr=0.0001, decay=0.0, batch_size=1024, test_batch_size=1024, min_epoch=5, epochs=200, model_path='./check_point', check_point='', model_name='model', device='cuda:0', data_path='../data/Tmall', TIME='2026-10-17 11_02_26')
+2026-10-17 11:03:00.880 | INFO     | __main__:<module>:103 - BIPN(
+  (message_dropout): Dropout(p=0.25, inplace=False)
+  (user_embedding): Embedding(41739, 64, padding_idx=0)
+  (item_embedding): Embedding(11954, 64, padding_idx=0)
+  (global_Graph): LightGCN()
+  (behavior_Graph): LightGCN()
+  (RZ): Linear(in_features=132, out_features=128, bias=False)
+  (U): Linear(in_features=132, out_features=64, bias=False)
+  (bpr_loss): BPRLoss()
+  (emb_loss): EmbLoss()
+  (cross_loss): BCELoss()
+)

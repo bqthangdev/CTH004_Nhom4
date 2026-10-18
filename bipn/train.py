@@ -38,10 +38,11 @@ def evaluate(model, data, split, config):
     relevance = []
     n_relevant = []
     train_target = data.train[data.target]
+    encoded = model.encode()
     for start in range(0, len(users), config.batch_size):
         chunk = users[start : start + config.batch_size]
         index = torch.tensor(chunk, dtype=torch.long, device=config.device)
-        scores = model.rank(index, train_target).cpu().numpy()
+        scores = model.rank(index, train_target, encoded=encoded).cpu().numpy()
         for row, user in enumerate(chunk):
             seen = train_target.get(user, [])
             if seen:

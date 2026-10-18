@@ -27,13 +27,15 @@ class LightGCN(nn.Module):
         current = x
         if self.indices.numel() == 0:
             return out
-        adj = torch.sparse_coo_tensor(
-            self.indices,
-            self.values,
-            (self.n_nodes, self.n_nodes),
-            device=x.device,
-            check_invariants=False,
-        ).coalesce()
+        if not hasattr(self, "_cached_adj") or self._cached_adj is None or self._cached_adj.device != x.device:
+            self._cached_adj = torch.sparse_coo_tensor(
+                self.indices,
+                self.values,
+                (self.n_nodes, self.n_nodes),
+                device=x.device,
+                check_invariants=False,
+            ).coalesce()
+        adj = self._cached_adj
         for layer in range(1, self.n_layers + 1):
             current = torch.sparse.mm(adj, current)
             out = out + current / (layer + 1)
@@ -105,8 +107,11 @@ class BIPN(nn.Module):
         reg = self.user_embedding.weight.pow(2).sum() + self.item_embedding.weight.pow(2).sum()
         return self.beta * bce + (1.0 - self.beta) * bpr + self.gamma * reg
 
-    def rank(self, users, target_items):
-        user_e, item_e, user_hat, item_hat = self.encode()
+    def rank(self, users, target_items, encoded=None):
+        if encoded is None:
+            user_e, item_e, user_hat, item_hat = self.encode()
+        else:
+            user_e, item_e, user_hat, item_hat = encoded
         users = users.long()
         aggregated, lam = self._aggregate(users, user_e, item_e, target_items)
         point = aggregated @ item_e.transpose(0, 1)
@@ -145,18 +150,30 @@ class BIPN(nn.Module):
         dim = user_e.shape[1]
         target_id = len(self.behaviors) - 1
         behavior = self.behavior_embedding[target_id]
-        aggregated = user_e.new_zeros((users.shape[0], dim))
-        counts = []
-        for row, user in enumerate(users.tolist()):
-            items = target_items.get(int(user), [])
-            counts.append(len(items))
-            if not items:
-                continue
-            item_index = torch.tensor(items, dtype=torch.long, device=device)
-            user_vec = user_e[int(user)].expand(item_index.shape[0], -1)
-            behavior_vec = behavior.expand(item_index.shape[0], -1)
-            pref = self.preference(user_vec, item_e[item_index], behavior_vec)
-            aggregated[row] = pref.sum(dim=0)
+        user_list = users.tolist()
+        agg_items = [target_items.get(int(u), []) for u in user_list]
+        counts = [len(items) for items in agg_items]
+        max_len = max(counts) if counts else 0
+        if max_len == 0:
+            aggregated = user_e.new_zeros((users.shape[0], dim))
+            lam = user_e.new_ones((users.shape[0], 1))
+            return aggregated, lam
+
+        padded = np.zeros((len(user_list), max_len), dtype=np.int64)
+        for i, items in enumerate(agg_items):
+            if items:
+                padded[i, : len(items)] = items
+        padded_tensor = torch.from_numpy(padded).to(device)
+        mask = (padded_tensor == 0).unsqueeze(-1)
+
+        item_embs = item_e[padded_tensor]
+        user_embs = user_e[users.long()].unsqueeze(1).expand(-1, max_len, -1)
+        bhv_embs = behavior.unsqueeze(0).unsqueeze(1).expand(users.shape[0], max_len, -1)
+
+        pref = self.preference(user_embs, item_embs, bhv_embs)
+        pref = pref.masked_fill(mask, 0.0)
+        aggregated = pref.sum(dim=1)
+
         count = torch.tensor(counts, dtype=user_e.dtype, device=device).unsqueeze(-1)
         lam = torch.where(count > 0, 1.0 / count, torch.ones_like(count))
         return aggregated, lam
@@ -201,9 +218,12 @@ class TargetLightGCN(nn.Module):
         reg = self.user_embedding.weight.pow(2).sum() + self.item_embedding.weight.pow(2).sum()
         return bpr + self.gamma * reg
 
-    def rank(self, users, target_items):
+    def rank(self, users, target_items=None, encoded=None):
         del target_items
-        user_e, item_e = self.encode()
+        if encoded is None:
+            user_e, item_e = self.encode()
+        else:
+            user_e, item_e = encoded
         scores = user_e[users.long()] @ item_e.transpose(0, 1)
         scores[:, 0] = torch.finfo(scores.dtype).min
         return scores

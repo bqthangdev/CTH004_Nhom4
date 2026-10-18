@@ -44,6 +44,8 @@ class BehaviorDate(Dataset):
         self.behavior_dict = behavior_dict
         self.behaviors = behaviors
         self.neg_count = neg_count
+        self.all_inter_sets = {str(k): set(v) for k, v in behavior_dict['all'].items()} if behavior_dict and 'all' in behavior_dict else {}
+        self.buy_inter_lists = behavior_dict[self.behaviors[-1]] if behavior_dict and self.behaviors else {}
 
     def __getitem__(self, idx):
         # generate positive and negative samples pairs under each behavior
@@ -53,23 +55,23 @@ class BehaviorDate(Dataset):
         u_id = pos[0]
         total.append(pos)
 
-        all_inter = self.behavior_dict['all'].get(str(u_id), None)
+        all_inter = self.all_inter_sets.get(str(u_id), set())
         for i in range(self.neg_count):
             item = random.randint(1, self.item_count)
-            while np.isin(item, all_inter):
+            while item in all_inter:
                 item = random.randint(1, self.item_count)
             neg = list(pos)
             neg[1] = item
             neg[-1] = 0
             total.append(neg)
 
-        buy_inter = self.behavior_dict[self.behaviors[-1]].get(str(u_id), None)
+        buy_inter = self.buy_inter_lists.get(str(u_id), None)
         if buy_inter is None:
             signal = [0, 0, 0, 0]
         else:
             p_item = random.choice(buy_inter)
             n_item = random.randint(1, self.item_count)
-            while np.isin(n_item, all_inter):
+            while n_item in all_inter:
                 n_item = random.randint(1, self.item_count)
             signal = [pos[0], p_item, n_item, 0]
 

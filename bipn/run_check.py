@@ -10,9 +10,14 @@ from run_pipeline import STEPS, dataset_dir
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Chấm lại validation và test từ checkpoint")
+    parser.add_argument("--dataset", choices=["all", "tmall", "retailrocket"], default="all")
+    args = parser.parse_args()
     if not torch.cuda.is_available():
         raise SystemExit("PyTorch không thấy GPU. Cài bản CUDA trước khi chạy pipeline.")
-    for dataset, model in STEPS:
+    steps = STEPS if args.dataset == "all" else [s for s in STEPS if s[0] == args.dataset]
+    for dataset, model in steps:
         command = [
             sys.executable,
             "main.py",

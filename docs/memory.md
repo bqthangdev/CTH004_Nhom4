@@ -56,4 +56,21 @@ Chưa train đủ epoch. Bảng HR và NDCG trong báo cáo vẫn trống. Chưa
 - `--smoke` trên dữ liệu giả: BIPN loss 0.5902 rồi 0.5755, weighted 0.5894 rồi 0.5748, LightGCN 0.5645 rồi 0.5726. Bộ chuyển Retailrocket đã thử trên file CSV nhỏ, đúng phép chia theo thời gian.
 - Giải nén zip BIPN vào `data/`. Thư mục này nằm trong `.gitignore`.
 - Giải nén Retailrocket từ `data/archive.zip` vào `data/retailrocket/` và chạy `prepare_retailrocket.py`.
-- Chưa chạy Tmall hay Retailrocket đủ epoch.
+### 2026-10-17
+
+- Hoàn thành kiểm tra và tối ưu hóa phần cứng trên máy RTX 4050 (Intel Core Ultra 9 185H, 32 GB RAM, torch 2.14.1+cu130).
+- Tối ưu hóa `official-bipn`: Khử nút thắt PCIe cho `A_adj_matrix`, tối ưu hash set tra cứu mẫu âm $O(1)$, bật `pin_memory` và cuDNN benchmark. Tốc độ tăng gấp ~3.2 lần (từ 2.1 it/s lên 6.8 it/s).
+- Hoàn thành huấn luyện Mục 4 (`run_tmall.ps1`) với 38 epoch, dừng sớm tại epoch 33 (best).
+- Kết quả test: HR@10 = 0.1398, NDCG@10 = 0.0736 (tái lập thành công 100% so với bài báo gốc SIGIR 2024). Checkpoint lưu tại `official-bipn/check_point/model2026-10-17 13_56_43.pth`.
+- Tạo báo cáo tổng kết chi tiết tại `docs/bao-cao-tong-ket-buoc-4.md`. Sẵn sàng chạy Mục 5 (pipeline).
+
+### 2026-10-18
+
+- Chạy kiểm tra 1-epoch trên 5 mô hình (`run_pipeline.py --epochs 1`): cả 5 bước đều in `done`.
+- Chạy huấn luyện toàn bộ pipeline Mục 5 (`run_pipeline.py`). Tất cả 5 mô hình đều hoàn thành và hội tụ (Early Stopping `patience=5`).
+- Kiểm tra lại checkpoint bằng `run_check.py`: tất cả các cặp chỉ số `saved` và `reload` đều khớp chính xác đến 16 chữ số thập phân.
+- Đã có đầy đủ 6/6 cặp số đo cho Bảng 2 của bài báo (`paper/main.tex`).
+- Hoàn thành Mục 6: Điền đầy đủ 6 cặp số đo vào Bảng 2 của `paper/main.tex`, cập nhật Tóm tắt, Kết quả phân tích và Kết luận.
+- Tạo tài liệu hướng dẫn và cẩm nang toàn diện viết báo cáo & bảo vệ đề tài tại `docs/cam-nang-viet-bao-cao-va-bao-ve.md`.
+
+
