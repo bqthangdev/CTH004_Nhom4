@@ -8,7 +8,7 @@ DATASETS = {
     "retailrocket": ["view", "cart", "buy"],
 }
 
-MODELS = ("bipn", "weighted", "lightgcn")
+MODELS = ("bipn", "weighted", "lightgcn", "learned")
 
 
 class Config:

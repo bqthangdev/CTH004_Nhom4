@@ -64,7 +64,7 @@ class ItemPreference(nn.Module):
 class BIPN(nn.Module):
     uses_bce = True
 
-    def __init__(self, n_users, n_items, behaviors, all_graph, target_graph, config, sample_weights=None):
+    def __init__(self, n_users, n_items, behaviors, all_graph, target_graph, config, sample_weights=None, row_counts=None):
         super().__init__()
         self.behaviors = list(behaviors)
         self.n_users = n_users
@@ -86,6 +86,13 @@ class BIPN(nn.Module):
             raise ValueError("Số trọng số phải bằng số hành vi.")
         else:
             self.register_buffer("behavior_weight", torch.tensor(sample_weights, dtype=torch.float32))
+        # Chế độ learned: n_b cố định (buffer), logit mỗi hành vi là tham số học.
+        self.learned = row_counts is not None
+        if self.learned:
+            if sample_weights is not None or len(row_counts) != len(self.behaviors):
+                raise ValueError("learned cần đúng một n_b mỗi hành vi và không đi cùng sample_weights.")
+            self.register_buffer("row_counts", torch.tensor(row_counts, dtype=torch.float32))
+            self.behavior_logit = nn.Parameter(torch.zeros(len(self.behaviors)))
         nn.init.xavier_uniform_(self.user_embedding.weight)
         nn.init.xavier_uniform_(self.item_embedding.weight)
         with torch.no_grad():
@@ -126,11 +133,21 @@ class BIPN(nn.Module):
         pref = self.preference(user_e[users], item_e[items], self.behavior_embedding[behaviors])
         logits = (pref * item_e[items]).sum(dim=-1)
         labels = labels.float()
-        if self.behavior_weight is None:
+        if self.learned:
+            weights = self.learned_weights()[behaviors]
+        elif self.behavior_weight is None:
             return self.bce(logits, labels)
-        weights = self.behavior_weight[behaviors]
+        else:
+            weights = self.behavior_weight[behaviors]
         per_row = F.binary_cross_entropy_with_logits(logits, labels, reduction="none")
         return (per_row * weights).mean()
+
+    def learned_weights(self):
+        """w_b = alpha_b * N / n_b, alpha = softmax(log n_b + logit). n_b = 0 bị bỏ khỏi softmax."""
+        n = self.row_counts
+        safe = n.clamp(min=1.0)
+        score = (safe.log() + self.behavior_logit).masked_fill(n <= 0, float("-inf"))
+        return torch.softmax(score, dim=0) * n.sum() / safe
 
     def _bpr_loss(self, users, pos_items, neg_items, user_e, item_e, user_hat, item_hat, target_items):
         if users.numel() == 0:

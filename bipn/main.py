@@ -103,6 +103,9 @@ def _build_model(name, data, config):
     if name == "lightgcn":
         return TargetLightGCN(data.n_users, data.n_items, data.target_graph, config)
     weights = None
+    row_counts = None
+    if name == "learned":
+        row_counts = [count * (1 + config.neg_count) for count in data.positive_counts()]
     if name == "weighted":
         weights = behavior_sample_weights(
             data.positive_counts(), data.behaviors, config.behavior_boost, config.neg_count
@@ -115,6 +118,7 @@ def _build_model(name, data, config):
         data.target_graph,
         config,
         weights,
+        row_counts,
     )
 
 
