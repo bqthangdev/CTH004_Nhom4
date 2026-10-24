@@ -2,8 +2,7 @@
 ## Gợi ý Đa hành vi (BIPN - SIGIR 2024)
 ### Môn học: Chuyên đề Hệ thống Thông tin Thông minh (CTH004) - Giảng viên: PGS.TS. Nguyễn Thái Nghe
 
-> **Tài liệu bàn giao cao cấp dành cho thành viên viết báo cáo và thuyết trình.**  
-> Cung cấp trọn bộ: Bối cảnh, số liệu thực nghiệm đầy đủ, phân tích học thuật mẫu, các đoạn văn viết sẵn cho từng mục của `paper/main.tex`, cẩm nang 5 câu hỏi vấn đáp bảo vệ với giảng viên, và hướng dẫn xuất bản PDF.
+> Sáu số trong mục 2 là các lần đã chạy. `--model learned` chưa có số. Lệnh chạy nằm ở [chay-mo-hinh-cai-tien.md](chay-mo-hinh-cai-tien.md).
 
 ---
 

@@ -6,9 +6,9 @@ Cập nhật 24/10/2026.
 
 Đường làm là BIPN, SIGIR 2024, arXiv 2404.18166. Khung nằm ở `bipn/`. Code gốc nằm ở `official-bipn/`.
 
-Ba lệnh mô hình: `--model bipn`, `--model weighted`, `--model lightgcn`. Bộ một là Tmall. Bộ hai là Retailrocket, chuyển bằng `bipn/prepare_retailrocket.py`. Plan: `docs/plan-bipn.md`.
+Ba lệnh đã có số: `--model bipn`, `--model weighted`, `--model lightgcn`. Lệnh đang chạy thêm là `--model learned`, chưa có số. Bộ một là Tmall. Bộ hai là Retailrocket, chuyển bằng `bipn/prepare_retailrocket.py`. Plan: `docs/plan-bipn.md`.
 
-Báo cáo là LNCS, `paper/main.tex`. Tác giả trên bài: Huỳnh Chí Dũng và Bành Quốc Thắng, Trường Công nghệ Thông tin, Đại học Cần Thơ. Bảng kết quả đã có sáu dòng. PDF biên dịch lại ngày 23/10/2026: 16 trang, 615544 byte. `README.md` và `docs/cau-hoi-can-xac-nhan.md` vẫn ghi tên tạm NVA, NVB.
+Báo cáo là LNCS, `paper/main.tex`. Tác giả trên bài: Huỳnh Chí Dũng và Bành Quốc Thắng, Trường Công nghệ Thông tin, Đại học Cần Thơ. Bảng kết quả đã có sáu dòng. PDF biên dịch lại ngày 23/10/2026: 16 trang, 615544 byte.
 
 ## Máy train
 
@@ -34,7 +34,7 @@ Log code gốc nằm trong `official-bipn/log/`. Log và checkpoint của pipeli
 
 ## Còn lại
 
-`README.md` và `docs/cau-hoi-can-xac-nhan.md` chưa đổi tên tạm. Bảng kết quả trong PDF tràn lề khoảng 61 pt. Ba mô hình Retailrocket giữ epoch 1. Mẫu LNCS hay mẫu tạp chí vẫn là câu mở nếu giảng viên yêu cầu mẫu tạp chí. PDF mới chưa commit.
+`README.md` đã ghi tên hai tác giả. Bảng kết quả trong PDF tràn lề khoảng 61 pt. Ba mô hình Retailrocket giữ epoch 1. Mẫu LNCS hay mẫu tạp chí vẫn là câu mở nếu giảng viên yêu cầu mẫu tạp chí.
 
 ## Nhật ký
 
@@ -104,3 +104,4 @@ Log code gốc nằm trong `official-bipn/log/`. Log và checkpoint của pipeli
 - Cài `torch 2.14.1+cu130` trên máy RTX 3050 Ti. Batch trong code vẫn là 1024. Một epoch Tmall `--model learned` mất 29 phút 49 giây. Lần thử batch 4096 không được giữ và checkpoint của lần đó đã xóa.
 - Cài `--model learned`: mỗi hành vi một logit học được trong BCE, `alpha = softmax(log n_b + logit)`, `w_b = alpha_b * N / n_b`. Chỉ sửa `_bce_loss`, không thêm vào `run_pipeline.py`, không đổi số đã ghi.
 - Kiểm tra: logit 0 cho mọi `w_b` = 1; tăng logit một hành vi thì w của nó tăng và w còn lại giảm; `behavior_logit.grad` khác None. `--smoke` vẫn chạy cho bipn, weighted và learned. Chưa có HR/NDCG của learned.
+- Thêm `--resume`. Sau mỗi epoch ghi `{dataset}_{model}.resume.pt`. Trên dữ liệu giả, 3 epoch chạy liền và 3 epoch dừng rồi chạy tiếp khớp loss, trọng số và Adam từng bit, cả CPU 8 luồng lẫn CUDA.

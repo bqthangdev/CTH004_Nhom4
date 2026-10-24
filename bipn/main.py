@@ -6,7 +6,16 @@ import random
 import numpy as np
 import torch
 
-from checkpoint import is_better, read_checkpoint, save_checkpoint
+from checkpoint import (
+    check_resume_matches,
+    is_better,
+    read_checkpoint,
+    read_resume,
+    restore_resume,
+    resume_file_of,
+    save_checkpoint,
+    save_resume,
+)
 from config import DATASETS, MODELS, Config, behavior_sample_weights
 from data import load_dataset, make_synthetic
 from model import BIPN, TargetLightGCN
@@ -24,6 +33,7 @@ def main():
     parser.add_argument("--patience", type=int, default=5, help="Dừng sớm sau N epoch không tăng (0 để tắt)")
     parser.add_argument("--batch_size", type=int, default=0, help="Ghi đè batch_size (0 dùng mặc định 1024)")
     parser.add_argument("--eval", action="store_true", help="Nạp mô hình đã lưu và chấm lại")
+    parser.add_argument("--resume", action="store_true", help="Chạy tiếp từ file .resume.pt của lần train trước")
     args = parser.parse_args()
 
     if torch.cuda.is_available():
@@ -39,9 +49,14 @@ def main():
         config.device = "cuda"
     if args.eval and args.smoke:
         raise SystemExit("--eval không dùng cùng --smoke.")
+    if args.resume and args.smoke:
+        raise SystemExit("--resume không dùng cùng --smoke.")
+    if args.resume and args.eval:
+        raise SystemExit("--resume không dùng cùng --eval.")
     if args.eval:
         _check(args, config)
         return
+    saved = None
     if args.smoke:
         config.embedding_size = 8
         config.n_layers = 1
@@ -55,6 +70,7 @@ def main():
             raise SystemExit("Cần --data trỏ tới thư mục dữ liệu, hoặc dùng --smoke.")
         if args.epochs:
             config.epochs = args.epochs
+        saved = _resume_state(args, config)
         data = load_dataset(args.data, DATASETS[args.dataset])
 
     _seed(config.seed)
@@ -62,23 +78,65 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     rng = np.random.default_rng(config.seed)
     best = None
+    best_test = None
     best_epoch = 0
+    start_epoch = 1
     patience = args.patience if not args.smoke else 0
-    for epoch in range(1, config.epochs + 1):
+    if args.resume:
+        restore_resume(saved, model, optimizer, rng, config.device)
+        best = saved["best_valid"]
+        best_test = saved["best_test"]
+        best_epoch = saved["best_epoch"]
+        start_epoch = saved["epoch"] + 1
+        print(f"resume from epoch {saved['epoch']}, best epoch {best_epoch}", flush=True)
+    for epoch in range(start_epoch, config.epochs + 1):
         loss = train_one_epoch(model, data, optimizer, config, rng)
         valid = evaluate(model, data, data.valid, config)
         test = evaluate(model, data, data.test, config)
-        print(f"epoch {epoch} loss {loss:.4f} valid {valid} test {test}", flush=True)
+        line = f"epoch {epoch} loss {loss:.4f} valid {valid} test {test}"
         if args.smoke:
+            print(line, flush=True)
             continue
-        if is_better(valid, best):
+        improved = is_better(valid, best)
+        if improved:
             path = save_checkpoint(args.dataset, args.model, model, epoch, valid, test, config)
             best = valid
+            best_test = test
             best_epoch = epoch
+        stop = not improved and patience > 0 and best_epoch > 0 and (epoch - best_epoch) >= patience
+        # Ghi resume sau mỗi epoch, sau khi best đã cập nhật. Ghi xong mới in, nên thấy dòng epoch là Ctrl+C được.
+        save_resume(args.dataset, args.model, model, optimizer, rng, epoch, best_epoch, best, best_test, config)
+        print(line, flush=True)
+        if improved:
             print(f"save epoch {epoch} {path.name}", flush=True)
-        elif patience > 0 and best_epoch > 0 and (epoch - best_epoch) >= patience:
+        if stop:
             print(f"early stop at epoch {epoch}, best epoch {best_epoch}", flush=True)
             break
+
+
+def _resume_state(args, config):
+    """Đọc file resume khi có --resume. Không có cờ thì từ chối nếu file đã tồn tại."""
+    path = resume_file_of(args.dataset, args.model)
+    if not args.resume:
+        if path.is_file():
+            raise SystemExit(
+                f"Đã có {path.name} của lần train trước. Dùng --resume để chạy tiếp, "
+                "hoặc xóa file đó nếu muốn train lại từ đầu."
+            )
+        return None
+    saved = read_resume(args.dataset, args.model)
+    check_resume_matches(saved, config, args.dataset, args.model)
+    if saved["epoch"] >= config.epochs:
+        raise SystemExit(
+            f"{path.name} đã xong epoch {saved['epoch']}, hết số epoch {config.epochs}. "
+            "Không học thêm. Tăng --epochs nếu muốn chạy tiếp."
+        )
+    if args.patience > 0 and saved["best_epoch"] > 0 and (saved["epoch"] - saved["best_epoch"]) >= args.patience:
+        raise SystemExit(
+            f"{path.name} đã tới ngưỡng dừng sớm: epoch {saved['epoch']}, best epoch {saved['best_epoch']}, "
+            f"patience {args.patience}. Tăng --patience nếu muốn chạy tiếp."
+        )
+    return saved
 
 
 def _check(args, config):

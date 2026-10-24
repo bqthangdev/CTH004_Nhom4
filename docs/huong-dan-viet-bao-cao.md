@@ -18,11 +18,7 @@
      3. **Đổi sang một tập dữ liệu mới (New Dataset):** Thực nghiệm trên tập dữ liệu thương mại điện tử **Retailrocket** (chưa từng xuất hiện trong bài báo gốc).
      4. **So sánh với một mô hình đối chứng (Baseline):** So sánh đối chứng với **LightGCN** (SIGIR 2020) chỉ huấn luyện trên hành vi đích mua hàng (`buy`).
 
-2. **Hiện trạng công việc:**
-   - **Toàn bộ 100% thực nghiệm đã chạy xong thành công trên GPU RTX 4050.**
-   - Tất cả checkpoint, nhật ký log, và các số đo kiểm thử độc lập (`run_check.py`) đã sẵn sàng.
-   - Tệp nguồn LaTeX `paper/main.tex` đã được điền sẵn đầy đủ 6/6 cặp số đo trong Bảng 2.
-   - **Nhiệm vụ của bạn:** Trau chuốt văn phong học thuật, bổ sung phân tích sâu sắc các kết quả số liệu, hoàn thiện thông tin tác giả và biên dịch thành tệp PDF hoàn chỉnh theo định dạng Springer LNCS.
+2. **Hiện trạng:** Sáu số trong bảng dưới là các lần đã chạy. Mô hình `--model learned` chưa có số. Lệnh chạy nằm ở [chay-mo-hinh-cai-tien.md](chay-mo-hinh-cai-tien.md). Tên tác giả đã có trong `paper/main.tex`.
 
 ---
 

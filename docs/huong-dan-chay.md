@@ -141,6 +141,10 @@ Lệnh train không truyền `--epochs`. Khi đó mỗi bước lấy số epoch
 .venv\Scripts\python.exe run_pipeline.py
 ```
 
+### Mô hình cải tiến và chạy tiếp
+
+Lệnh của `--model learned` nằm ở [chay-mo-hinh-cai-tien.md](chay-mo-hinh-cai-tien.md). Mở PowerShell trong thư mục `bipn`, dán lần lượt ba lệnh của từng bộ. Đợi dòng `epoch N ...` in xong rồi mới tắt máy. Lệnh có `--resume` chạy tiếp từ epoch sau. Quên `--resume` thì chương trình từ chối, không ghi đè lần đang dở. `run_pipeline.py` không chạy mô hình này.
+
 ### Pipeline tự chạy những gì
 
 Hai lệnh ở trên đều gọi một chương trình. Chương trình đó tự đi hết năm bước trong bảng dưới đây. Không gõ năm lệnh riêng, và không cần đổi mô hình bằng tay giữa các bước. Dòng Tmall BIPN không nằm ở đây, vì dòng đó lấy từ code gốc ở mục 4.

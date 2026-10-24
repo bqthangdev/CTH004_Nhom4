@@ -14,6 +14,7 @@ Hành vi cuối trong danh sách là hành vi đích. Tmall dùng `click`, `coll
 |---|---|
 | `bipn` | BIPN theo lệnh train Tmall của repo gốc. |
 | `weighted` | Cùng mạng. Cart và hành vi đích có hệ số 2 trong BCE. |
+| `learned` | Cùng mạng. Mỗi hành vi một hệ số BCE được học. |
 | `lightgcn` | LightGCN chỉ trên đồ thị hành vi đích. |
 
-Cách chạy nằm ở [docs/huong-dan-chay.md](../docs/huong-dan-chay.md).
+Lệnh `learned` nằm ở [docs/chay-mo-hinh-cai-tien.md](../docs/chay-mo-hinh-cai-tien.md). Các lệnh còn lại nằm ở [docs/huong-dan-chay.md](../docs/huong-dan-chay.md).

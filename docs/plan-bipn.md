@@ -65,8 +65,6 @@ Table 1 của bài MBHT ghi một bản Retailrocket khác: 11.649 user, 36.223 
 
 ## Máy
 
-Máy đang mở repo, đã kiểm bằng lệnh: RTX 3050 Ti Laptop, 4096 MiB, driver 617.42, RAM 31,7 GB. `bipn/.venv` là PyTorch 2.14.1+cpu. GPU chưa được dùng vì chưa cài bản CUDA.
+Máy đang mở repo: RTX 3050 Ti Laptop, 4096 MiB, RAM 31,7 GB, `bipn/.venv` là torch 2.14.1+cu130. Một epoch Tmall `--model learned` khoảng 30 phút.
 
-Máy còn lại, theo lời thành viên: Idealpad 5 Pro, Core Ultra 9 185H, RTX 4050, 32 GB RAM. Chưa kiểm trên máy đó.
-
-Tmall với 4 mẫu âm tạo khoảng 11,1 triệu dòng BCE mỗi epoch, cỡ 2 GB RAM cho riêng danh sách đó. Chưa đo thời gian 200 epoch.
+Bản train đã ghi trong báo cáo chạy trên RTX 4050 Laptop, 6 GB, Core Ultra 9 185H, 32 GB RAM.

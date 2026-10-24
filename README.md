@@ -1,10 +1,10 @@
 # CTH004 — Topic 5: Multi-Behavior Recommendations
 
-Bài tập nhóm môn Chuyên đề HTTT Thông minh, Khoa HTTT, 2026. Giảng viên: PGS.TS. Nguyễn Thái Nghe.
+Bài tập nhóm môn Chuyên đề HTTT Thông minh, Trường Công nghệ Thông tin, Đại học Cần Thơ, 2026. Giảng viên: PGS.TS. Nguyễn Thái Nghe.
 
 Phương pháp đang triển khai là BIPN (SIGIR 2024). Bộ dữ liệu là Tmall và Retailrocket. Mô hình đối chứng là LightGCN trên hành vi đích.
 
-Bắt đầu tại [docs/huong-dan-chay.md](docs/huong-dan-chay.md), làm lần lượt từ mục 1. Dữ liệu không nằm trong git.
+Chạy máy theo [docs/huong-dan-chay.md](docs/huong-dan-chay.md), từ mục 1. Lệnh mô hình cải tiến nằm ở [docs/chay-mo-hinh-cai-tien.md](docs/chay-mo-hinh-cai-tien.md). Dữ liệu không nằm trong git.
 
 ## Cấu trúc
 
@@ -25,7 +25,7 @@ Nhóm 2 sinh viên: chạy lại một phương pháp trong danh sách trên, s�
 - Báo cáo theo mẫu Springer: 30%
 - Kết quả thí nghiệm: 70%
 
-Tên trên báo cáo hiện là NVA và NVB. Email và tên trường đầy đủ chưa điền trong [paper/main.tex](paper/main.tex).
+Tên trên báo cáo là Huỳnh Chí Dũng và Bành Quốc Thắng, Trường Công nghệ Thông tin, Đại học Cần Thơ.
 
 ## Báo cáo
 
@@ -50,8 +50,9 @@ pdflatex -interaction=nonstopmode main.tex
 |---|---|
 | [docs/de-xuat-topic5-multi-behavior.md](docs/de-xuat-topic5-multi-behavior.md) | So sánh BIPN, CRGCN và MBHT. |
 | [docs/plan-bipn.md](docs/plan-bipn.md) | Plan BIPN. |
-| [docs/cai-tien.md](docs/cai-tien.md) | Phép cải tiến: trọng số BCE cho cart và hành vi đích. |
-| [docs/huong-dan-chay.md](docs/huong-dan-chay.md) | Cách chạy và các tham số. |
+| [docs/chay-mo-hinh-cai-tien.md](docs/chay-mo-hinh-cai-tien.md) | Lệnh chạy `--model learned`. |
+| [docs/cai-tien.md](docs/cai-tien.md) | Các hướng sửa mô hình. Hướng đã cài để chạy là `--model learned`. |
+| [docs/huong-dan-chay.md](docs/huong-dan-chay.md) | Cách tải dữ liệu, cài GPU và chạy pipeline. |
 | [docs/cau-hoi-can-xac-nhan.md](docs/cau-hoi-can-xac-nhan.md) | Mục đã chốt và mục còn mở. |
 | [docs/memory.md](docs/memory.md) | Hiện trạng và nhật ký. |
 
