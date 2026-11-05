@@ -3,6 +3,7 @@
 % Tác giả: Huỳnh Chí Dũng, Bành Quốc Thắng
 % Đơn vị: Trường Công nghệ Thông tin, Đại học Cần Thơ, Việt Nam
 
+\pdfinclusioncopyfonts=1
 \documentclass{llncs}
 
 \usepackage[utf8]{inputenc}
@@ -30,20 +31,22 @@
 \maketitle
 
 \begin{abstract}
-Hành vi mua hàng trên các nền tảng thương mại điện tử là tín hiệu mục tiêu then chốt nhưng luôn chịu sự chi phối của hiện tượng thưa thớt dữ liệu nghiêm trọng khi chỉ chiếm dưới 2\% tổng lượng tương tác, dẫn tới sự suy thoái hiệu năng của các hệ thống gợi ý đơn hành vi. Nhằm giải quyết điểm nghẽn này, mô hình BIPN tích hợp đồ thị hai phía toàn cục và mạng nơ-ron điều hướng ý định hai chiều nhằm khai thác các hành vi phụ trợ phục vụ việc ước lượng hành vi mua hàng. Bài báo này tiến hành nghiên cứu thực nghiệm độc lập và đánh giá toàn diện mô hình BIPN qua bốn nội dung học thuật: tái lập mã nguồn trên tập dữ liệu chuẩn Tmall, đề xuất biến thể hàm mất mát có trọng số chuẩn hóa kỳ vọng đóng góp, kiểm chứng năng lực khái quát hóa trên tập dữ liệu mới Retailrocket bằng quy trình phân chia theo dòng thời gian nghiêm ngặt, và so sánh đối chứng với mô hình đơn hành vi LightGCN. Kết quả thực nghiệm xác nhận ưu thế vượt trội của kiến trúc đa hành vi khi BIPN đạt HR@10 là 0{,}1398 trên Tmall (gấp 9{,}9 lần so với 0{,}0141 của LightGCN) và đạt 0{,}1275 trên Retailrocket (vượt trội 425 lần so với mức 0{,}0003 của LightGCN). Bên cạnh đó, phân tích bóc tách kết hợp lý thuyết không gian pha hình học chứng minh cơ chế điều hướng ý định thích nghi động bằng mạng nơ-ron của BIPN nguyên bản đạt độ bền vững cao hơn phương pháp gán trọng số tĩnh khi phân phối dữ liệu nền tảng bị mất cân bằng cực đoan.
-\keywords{Gợi ý đa hành vi \and Mạng nơ-ron đồ thị \and Thưa thớt dữ liệu \and Mô hình BIPN \and Thương mại điện tử}
+Hành vi mua hàng trên các nền tảng thương mại điện tử là tín hiệu mục tiêu then chốt nhưng thường chịu ảnh hưởng nặng nề bởi hiện tượng thưa thớt dữ liệu khi chỉ chiếm một tỷ trọng rất nhỏ trong tổng lượng tương tác, dẫn tới sự suy giảm hiệu năng của các hệ thống gợi ý đơn hành vi. Nhằm giải quyết điểm nghẽn này, mô hình BIPN tích hợp đồ thị hai phía toàn cục và mạng nơ-ron lọc sở thích theo ngữ cảnh để khai thác các hành vi phụ trợ phục vụ việc ước lượng xác suất mua hàng. Bài báo này trình bày nghiên cứu thực nghiệm độc lập nhằm khảo sát năng lực khái quát hóa của BIPN trên hai tập dữ liệu Tmall và Retailrocket, đặt trong thế đối chứng với mô hình đơn hành vi LightGCN, đồng thời phân tích hai hướng tiếp cận cải tiến đối với kiến trúc gốc. Hướng tiếp cận thứ nhất áp dụng trọng số entropy chéo nhị phân tỷ lệ nghịch với tần suất hành vi trên khung cơ sở chưa chuẩn hóa đồng bộ; phân tích không gian pha hình học chứng minh cách tiếp cận này gây phóng đại đạo hàm cục bộ và dẫn đến hiện tượng sụp đổ biểu diễn khi phân phối phễu tương tác bị lệch cực đoan (HR@10 giảm về 0{,}0071 trên Tmall). Nhằm khắc phục hạn chế trên cũng như cải thiện tính linh hoạt của hệ số trộn heuristic $\lambda_u = 1/|\mathcal{N}_u^{(b_K)}|$ trong công bố gốc, hướng tiếp cận thứ hai thiết lập chuẩn hóa L2 xuyên tầng kết hợp cơ chế điều hòa ý định logarit tách pha giữa huấn luyện và suy luận $\lambda_u^{\mathrm{rank}} = [1 + \log_2(|\mathcal{N}_u^{(b_K)}| + 1)]^{-1}$, đồng thời tích hợp trọng số hành vi bảo toàn thang đo (\texttt{BIPN-Weighted}) hoặc học tự thích nghi qua hàm chặn hyperbolic tangent (\texttt{BIPN-Learned}). Kết quả thực nghiệm và kiểm định thống kê cặp xác nhận hướng tiếp cận thứ hai đạt hiệu quả ổn định trên cả hai nền tảng, nâng HR@10 kiểm tra trên Tmall từ 0{,}1398 (bản tái lập chuẩn) lên 0{,}1472 ($p < 0{,}001$) và NDCG@10 từ 0{,}0736 lên 0{,}0771 ($p < 0{,}01$, vượt mức tham chiếu 0{,}1414 và 0{,}0741 của công bố gốc tại SIGIR 2024), đồng thời nâng HR@10 xác thực trên Retailrocket từ 0{,}4983 lên 0{,}5198 ($p < 0{,}01$) và đạt HR@10 kiểm tra ở mức 0{,}8599 ($p < 0{,}01$).
+\keywords{Gợi ý đa hành vi \and Mạng nơ-ron đồ thị \and Thưa thớt dữ liệu \and Điều hòa ý định logarit \and Mô hình BIPN \and Thương mại điện tử}
 \end{abstract}
 
 \section{Giới thiệu}
 \label{sec:intro}
 
-Hệ thống gợi ý giữ vai trò quyết định trong việc cá nhân hóa thông tin và thúc đẩy tăng trưởng doanh số trên các nền tảng thương mại điện tử hiện đại~\cite{koren2009matrix,wu2022graph}. Trong quá trình tương tác thực tế, người tiêu dùng thường trải qua một chuỗi hành vi bao gồm xem sản phẩm, lưu vào danh sách yêu thích, thêm vào giỏ hàng và thanh toán giao dịch~\cite{gao2021neural,xia2021multiplex}. Tuy nhiên, hành vi mua hàng luôn là sự kiện có tần suất thấp nhất trong toàn bộ phễu tương tác. Thực trạng bất đối xứng này tạo ra độ thưa ma trận vượt mức 99{,}6\%, khiến các thuật toán lọc cộng tác truyền thống và mô hình tích chập đồ thị đơn hành vi như LightGCN~\cite{he2020lightgcn} bị đứt gãy topo liên kết và suy giảm chất lượng biểu diễn.
+Hệ thống gợi ý giữ vai trò quan trọng trong việc cá nhân hóa thông tin và thúc đẩy chuyển đổi giao dịch trên các nền tảng thương mại điện tử hiện đại~\cite{koren2009matrix,wu2022graph}. Trong quá trình tương tác thực tế, người tiêu dùng thường trải qua một chuỗi hành vi liên tiếp bao gồm duyệt xem sản phẩm, lưu vào danh sách yêu thích, thêm vào giỏ hàng và thanh toán giao dịch~\cite{gao2021neural,xia2021multiplex}. Tuy nhiên, hành vi mua hàng luôn là sự kiện có tần suất xuất hiện thấp nhất trong toàn bộ phễu chuyển đổi. Sự bất đối xứng về tần suất này tạo ra độ thưa ma trận vượt mức 99{,}6\%, khiến các thuật toán lọc cộng tác truyền thống và các mô hình tích chập đồ thị đơn hành vi như LightGCN~\cite{he2020lightgcn} bị phân mảnh cấu trúc liên kết topo và suy giảm chất lượng biểu diễn nhúng.
 
-Mô hình hóa đa hành vi là hướng tiếp cận hiệu quả nhằm tận dụng lượng tương tác phong phú từ các hành vi phụ trợ để bù đắp sự khan hiếm của hành vi mục tiêu~\cite{chen2021graph,jin2020mbgcn,wang2022multi}. Nhiều công trình tiêu biểu đã khẳng định tính khả thi của phương pháp này, nổi bật là mạng tích chập đồ thị MBGCN~\cite{jin2020mbgcn} và kiến trúc siêu đồ thị Transformer MBHT~\cite{yang2022mbht}. Gần đây nhất, Yan và cộng sự~\cite{yan2024bipn} đã đề xuất mô hình BIPN với cấu trúc đồ thị hai phía toàn cục kết hợp mạng nơ-ron ba lớp điều hướng ý định hai chiều nhằm thanh lọc tín hiệu mua hàng thuần khiết từ các hành vi khám phá ban đầu.
+Mô hình hóa đa hành vi là hướng tiếp cận hiệu quả nhằm tận dụng nguồn tín hiệu phong phú từ các hành vi phụ trợ để bù đắp sự khan hiếm của hành vi mục tiêu~\cite{chen2021graph,jin2020mbgcn,wang2022multi}. Trong các công trình nền tảng trước đây, MBGCN~\cite{jin2020mbgcn} thiết lập cơ chế lan truyền thông điệp có trọng số học tự động trên đồ thị dị thể đa quan hệ, MBHT~\cite{yang2022mbht} khai thác cấu trúc siêu đồ thị kết hợp cơ chế tự chú ý để nắm bắt phụ thuộc đa thang đo, trong khi CRGCN~\cite{yan2023crgcn} truyền phần dư tuần tự qua chuỗi các tầng hành vi theo thứ tự phễu chuyển đổi. Mặc dù đạt được những bước tiến đáng kể, các kiến trúc trên vẫn gộp trực tiếp hoặc cộng dồn biểu diễn của hành vi phụ vào hàm dự đoán cuối cùng. Gần đây, Yan và cộng sự~\cite{yan2024bipn} chỉ ra rằng việc đưa trực tiếp tín hiệu của hành vi phụ vào điểm xếp hạng mục tiêu dễ làm phát sinh nhiễu không tương thích, từ đó đề xuất mô hình BIPN (\emph{Behavior-Contextualized Item Preference Network}). BIPN sử dụng các hành vi phụ trợ để học biểu diễn nền tảng trên đồ thị toàn cục và huấn luyện mạng lọc sở thích ba lớp, trong khi điểm xếp hạng cuối cùng chỉ kết hợp tuyến tính giữa nhánh sở thích mục tiêu và nhánh đồ thị hành vi mua thông qua hệ số điều hòa $\lambda_u = 1/|\mathcal{N}_u^{(b_K)}|$.
 
-Mặc dù mô hình BIPN đã chứng minh được hiệu năng cao trong công bố gốc, việc đánh giá độc lập về tính tái lập và năng lực khái quát hóa trên các miền dữ liệu mới vẫn là một yêu cầu khoa học cần thiết. Nghiên cứu này triển khai đánh giá thực nghiệm toàn diện với bốn nội dung trọng tâm. Thứ nhất, mã nguồn chính thức của BIPN được tái lập độc lập trên tập dữ liệu chuẩn Tmall, đồng thời quy trình nạp đồ thị và lấy mẫu âm được tối ưu hóa nhằm tăng tốc độ huấn luyện gấp 3{,}24 lần trên phần cứng máy tính cá nhân. Thứ hai, một biến thể hàm mất mát có trọng số chuẩn hóa kỳ vọng đóng góp được xây dựng nhằm tăng cường ảnh hưởng của các hành vi chuyển đổi cao. Thứ ba, năng lực khái quát hóa của mô hình được kiểm chứng trên tập dữ liệu mới Retailrocket~\cite{retailrocket2016} thông qua phương pháp phân chia thời gian chặt chẽ chống rò rỉ dữ liệu. Thứ tư, mô hình đối chứng LightGCN trên riêng đồ thị hành vi đích được thiết lập để lượng hóa giá trị thặng dư tri thức do dữ liệu đa hành vi mang lại.
+Mặc dù mô hình BIPN đã chứng minh được hiệu năng cạnh tranh trong công bố gốc, hai vấn đề lý thuyết và thực nghiệm vẫn cần được khảo sát sâu hơn. Thứ nhất, đối với hàm mất mát phân loại đa hành vi, việc điều chỉnh mức độ đóng góp giữa hành vi xem lướt (chiếm trên 70--80\% tổng số mẫu) và các hành vi có ý định chuyển đổi cao (như thêm vào giỏ hàng, đôi khi chỉ chiếm dưới 0{,}1\% tổng số mẫu) nếu thực hiện bằng trọng số nghịch đảo tần suất tĩnh sẽ tiềm ẩn nguy cơ mất ổn định đạo hàm. Thứ hai, chính nhóm tác giả của BIPN tại Mục 4.4~\cite{yan2024bipn} đã nhận định rằng quy tắc heuristic $\lambda_u = 1/|\mathcal{N}_u^{(b_K)}|$ phân bổ trọng số chưa tối ưu: đối với người dùng chỉ có một giao dịch mua trong tập huấn luyện ($|\mathcal{N}_u^{(b_K)}| = 1$), hệ số $1 - \lambda_u = 0$ làm triệt tiêu nhánh sở thích cá nhân hóa; ngược lại, khi $|\mathcal{N}_u^{(b_K)}| \ge 2$, hàm nghịch đảo tuyến tính suy giảm quá nhanh làm suy yếu tín hiệu cộng tác từ nhánh đồ thị đích.
 
-Cấu trúc các phần tiếp theo của bài báo được tổ chức như sau: Mục~\ref{sec:method} trình bày hình thức hóa toán học, kiến trúc mô hình BIPN, biến thể hàm mất mát có trọng số và mô hình đối chứng LightGCN. Mục~\ref{sec:exp} phân tích đặc tính dữ liệu, thiết lập thực nghiệm, động thái hội tụ, báo cáo kết quả và thảo luận chuyên sâu từ góc độ topo đồ thị cùng không gian pha hình học biểu diễn. Cuối cùng, Mục~\ref{sec:conclusion} tổng kết các phát hiện khoa học và định hướng các nghiên cứu tiếp theo.
+Nhằm làm sáng tỏ các vấn đề trên, nghiên cứu này thực hiện bốn nội dung học thuật trọng tâm: (1) tái lập độc lập mô hình BIPN trên tập dữ liệu chuẩn Tmall và tối ưu hóa kỹ thuật lưu trữ đồ thị thưa phục vụ thực thi hiệu quả trên phần cứng máy tính cá nhân; (2) mở rộng kiểm chứng năng lực khái quát hóa trên tập dữ liệu thương mại điện tử phương Tây Retailrocket~\cite{retailrocket2016} thông qua quy trình chia tách theo dòng thời gian; (3) thiết lập và đối sánh hai hướng tiếp cận cải tiến gồm \emph{Hướng tiếp cận tái cân bằng tĩnh nghịch đảo tần suất} và \emph{Hướng tiếp cận điều hòa ý định logarit tách pha kết hợp trọng số hành vi bảo toàn thang đo}; và (4) đối chứng định lượng với mô hình đơn hành vi LightGCN kết hợp phân tích topo đồ thị và hình học không gian biểu diễn.
+
+Cấu trúc các phần tiếp theo của bài báo được tổ chức như sau: Mục~\ref{sec:method} trình bày hình thức hóa bài toán, kiến trúc BIPN, hai hướng tiếp cận cải tiến và mô hình đối chứng LightGCN. Mục~\ref{sec:exp} phân tích đặc trưng dữ liệu, thiết lập thực nghiệm, động thái hội tụ, kết quả bóc tách giữa hai hướng tiếp cận và thảo luận chuyên sâu từ góc độ thẩm thấu đồ thị cùng không gian pha hình học. Cuối cùng, Mục~\ref{sec:conclusion} tổng kết các phát hiện khoa học và định hướng nghiên cứu tiếp theo.
 
 \section{Phương pháp Nghiên cứu}
 \label{sec:method}
@@ -51,66 +54,109 @@ Cấu trúc các phần tiếp theo của bài báo được tổ chức như sa
 \subsection{Hình thức hóa Bài toán Gợi ý Đa hành vi}
 \label{sec:formulation}
 
-Không gian bài toán được định nghĩa bởi tập hợp $M$ người dùng $U = \{u_1, u_2, \dots, u_M\}$ và tập hợp $N$ món hàng $I = \{i_1, i_2, \dots, i_N\}$. Tập hợp $K$ loại hình hành vi phân biệt được ký hiệu là $B = \{b_1, b_2, \dots, b_K\}$, trong đó hành vi cuối cùng $b_K$ được chỉ định là hành vi đích mua hàng. Mỗi hành vi $b \in B$ được biểu diễn thông qua một ma trận tương tác nhị phân $Y^{(b)} \in \{0, 1\}^{M \times N}$, với phần tử $y_{ui}^{(b)} = 1$ biểu thị người dùng $u$ từng tương tác với món hàng $i$ qua hành vi $b$, và $y_{ui}^{(b)} = 0$ khi không có tương tác. Tập lân cận tương tác của người dùng $u$ dưới hành vi $b$ được ký hiệu là $\mathcal{N}_u^{(b)} = \{i \in I \mid y_{ui}^{(b)} = 1\}$. Mục tiêu của hệ thống là dựa trên lịch sử tương tác đa hành vi $\{Y^{(b)}\}_{b=1}^K$ để ước lượng xác suất xảy ra hành vi đích $b_K$ giữa người dùng $u$ và món hàng $i$, phục vụ việc tạo danh sách xếp hạng Top-$K$ món hàng có xác suất chuyển đổi cao nhất.
+Không gian bài toán được định nghĩa bởi tập hợp $M$ người dùng $U = \{u_1, u_2, \dots, u_M\}$ và tập hợp $N$ món hàng $I = \{i_1, i_2, \dots, i_N\}$. Tập hợp $K$ loại hình hành vi phân biệt được ký hiệu là $B = \{b_1, b_2, \dots, b_K\}$, trong đó hành vi cuối cùng $b_K$ được chỉ định là hành vi đích mua hàng. Mỗi hành vi $b \in B$ được biểu diễn thông qua một ma trận tương tác nhị phân $Y^{(b)} \in \{0, 1\}^{M \times N}$, với phần tử $y_{ui}^{(b)} = 1$ biểu thị người dùng $u$ từng tương tác với món hàng $i$ qua hành vi $b$, và $y_{ui}^{(b)} = 0$ trong trường hợp ngược lại. Tập lân cận tương tác của người dùng $u$ dưới hành vi $b$ được ký hiệu là $\mathcal{N}_u^{(b)} = \{i \in I \mid y_{ui}^{(b)} = 1\}$ với lực lượng $N_u = |\mathcal{N}_u^{(b_K)}|$ biểu thị số lượng món hàng đã mua của người dùng $u$ trong tập huấn luyện. Mục tiêu của hệ thống là dựa trên lịch sử tương tác đa hành vi $\{Y^{(b)}\}_{b=1}^K$ để ước lượng điểm tương thích $y_{ui}$ đối với hành vi đích $b_K$, từ đó trích xuất danh sách xếp hạng Top-$N_{\mathrm{rec}}$ món hàng có xác suất chuyển đổi cao nhất.
 
 \subsection{Kiến trúc Mô hình BIPN}
 \label{sec:bipn}
 
-Kiến trúc mô hình BIPN~\cite{yan2024bipn} bao gồm ba thành phần tương hỗ: đồ thị liên thông toàn cục, mạng nơ-ron lọc sở thích theo ngữ cảnh hành vi, và cơ chế điều hướng ý định hai chiều.
+Kiến trúc mô hình BIPN~\cite{yan2024bipn} bao gồm ba thành phần tương hỗ: đồ thị liên thông toàn cục, mạng nơ-ron lọc sở thích theo ngữ cảnh hành vi, và cơ chế kết hợp ý định điểm với ý định đồ thị lân cận.
 
-Quá trình học biểu diễn bắt đầu bằng việc hợp nhất $K$ ma trận tương tác thành đồ thị hai phía không hướng toàn cục $\mathcal{G}_{\mathrm{all}} = (U \cup I, \mathcal{E}_{\mathrm{all}})$. Cạnh nối giữa đỉnh người dùng $u$ và đỉnh món hàng $i$ tồn tại nếu có ít nhất một hành vi $b \in B$ thỏa mãn $y_{ui}^{(b)} = 1$. Ma trận kề chuẩn hóa đối xứng của đồ thị gộp được tính toán theo công thức $\tilde{A} = D^{-1/2} A_{\mathrm{all}} D^{-1/2}$, với $D$ là ma trận đường chéo bậc đỉnh~\cite{kipf2017semi}. Bảng biểu diễn embedding khởi tạo $E^{(0)} = [E_u^{(0)}; E_i^{(0)}] \in \mathbb{R}^{(M+N) \times d}$ với số chiều $d=64$ được lan truyền qua $L=2$ tầng tích chập LightGCN~\cite{he2020lightgcn}. Tại tầng tích chập thứ $l$, biểu diễn được cập nhật theo quy tắc $E^{(l)} = \tilde{A} E^{(l-1)}$. Biểu diễn tổng hợp của người dùng và món hàng được xác định bằng phép kết hợp tuyến tính có trọng số suy giảm theo độ sâu tầng:
+Quá trình học biểu diễn bắt đầu bằng việc hợp nhất $K$ ma trận tương tác thành đồ thị hai phía không hướng toàn cục $\mathcal{G}_{\mathrm{all}} = (U \cup I, \mathcal{E}_{\mathrm{all}})$. Cạnh nối giữa đỉnh người dùng $u$ và đỉnh món hàng $i$ tồn tại nếu có ít nhất một hành vi $b \in B$ thỏa mãn $y_{ui}^{(b)} = 1$, tạo thành ma trận tương tác gộp $R_{\mathrm{all}} \in \{0, 1\}^{M \times N}$ và ma trận kề khối đối xứng $A_{\mathrm{all}} = \bigl[\begin{smallmatrix} 0 & R_{\mathrm{all}} \\ R_{\mathrm{all}}^\top & 0 \end{smallmatrix}\bigr] \in \{0, 1\}^{(M+N) \times (M+N)}$. Ma trận kề chuẩn hóa Laplacian được xác định bởi $\tilde{A} = D^{-1/2} A_{\mathrm{all}} D^{-1/2}$, với $D$ là ma trận đường chéo bậc đỉnh~\cite{kipf2017semi}. Bảng biểu diễn nhúng khởi tạo $E^{(0)} = [E_u^{(0)}; E_i^{(0)}] \in \mathbb{R}^{(M+N) \times d}$ với số chiều $d=64$ được lan truyền qua $L=2$ tầng tích chập LightGCN~\cite{he2020lightgcn}. Trong khung cơ sở đơn giản hóa (\texttt{BIPN-Base}), biểu diễn tổng hợp lấy tổ hợp tuyến tính suy giảm theo tầng mà chưa áp dụng chuẩn hóa đơn vị trung gian:
 \begin{equation}
-\mathbf{e}_u = \sum_{l=0}^L \frac{1}{l+1} E_u^{(l)}, \quad \mathbf{e}_i = \sum_{l=0}^L \frac{1}{l+1} E_i^{(l)}.
+\mathbf{e}_u = \sum_{l=0}^L \frac{1}{l+1} E_u^{(l)}, \quad \mathbf{e}_i = \sum_{l=0}^L \frac{1}{l+1} E_i^{(l)}, \quad E^{(l)} = \tilde{A} E^{(l-1)}.
+\label{eq:gcn_base}
 \end{equation}
 
-Đối với từng bộ ba tương tác gồm người dùng $u$, món hàng $i$ và hành vi $b$, vector biểu diễn hành vi $\mathbf{e}_b \in \mathbb{R}^d$ được kết hợp với vector người dùng và món hàng thông qua mạng nơ-ron ba lớp để tinh lọc vector sở thích theo ngữ cảnh:
+Đối với từng bộ ba tương tác gồm người dùng $u$, món hàng $i$ và hành vi $b$, vector định danh hành vi $\mathbf{e}_b \in \mathbb{R}^K$ (khởi tạo bằng ma trận đơn vị one-hot $I_K$) được ghép nối với vector người dùng và món hàng để đưa qua mạng lọc sở thích ba lớp gồm cổng tiền lọc, tầng trích xuất đặc trưng ngữ cảnh và cổng hậu lọc:
 \begin{align}
-\mathbf{g}_{ub} &= \sigma\left(\mathbf{W}_1 [\mathbf{e}_u \,\|\, \mathbf{e}_b] + \mathbf{b}_1\right), \label{eq:gate} \\
-\mathbf{h}_{uib} &= \tanh\left(\mathbf{W}_2 [(\mathbf{e}_u \odot \mathbf{g}_{ub}) \,\|\, \mathbf{e}_i \,\|\, \mathbf{e}_b] + \mathbf{b}_2\right), \label{eq:hidden} \\
-\mathbf{p}_{uib} &= \mathbf{h}_{uib} \odot \sigma\left(\mathbf{W}_3 [\mathbf{e}_u \,\|\, \mathbf{e}_i \,\|\, \mathbf{e}_b] + \mathbf{b}_3\right), \label{eq:pref}
+\mathbf{g}_{uib}^{\mathrm{pre}} &= \sigma\left(\mathbf{W}_1 [\mathbf{e}_u \,\|\, \mathbf{e}_i \,\|\, \mathbf{e}_b]\right), \label{eq:gate} \\
+\mathbf{h}_{uib} &= \tanh\left(\mathbf{W}_2 [(\mathbf{e}_u \odot \mathbf{g}_{uib}^{\mathrm{pre}}) \,\|\, \mathbf{e}_i \,\|\, \mathbf{e}_b]\right), \label{eq:hidden} \\
+\mathbf{p}_{uib} &= \mathbf{h}_{uib} \odot \sigma\left(\mathbf{W}_3 [\mathbf{e}_u \,\|\, \mathbf{e}_i \,\|\, \mathbf{e}_b]\right), \label{eq:pref}
 \end{align}
-trong đó $[\cdot \,\|\, \cdot]$ là phép nối vector, $\odot$ là tích Hadamard từng phần tử, còn $\mathbf{W}_1, \mathbf{W}_2, \mathbf{W}_3$ và $\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3$ là các tham số trọng số và độ lệch khả vi. Cổng thích nghi trong phương trình~(\ref{eq:gate}) điều biến mức độ sở thích theo loại hành vi; tầng phi tuyến trong phương trình~(\ref{eq:hidden}) trích xuất đặc trưng bậc cao của bộ ba; và tầng lọc trong phương trình~(\ref{eq:pref}) trích xuất vector sở thích món hàng $\mathbf{p}_{uib}$. Đối với hành vi đích $b_K$, biểu diễn ý định tổng thể của người dùng $\mathbf{p}_u$ được tính bằng tổng các vector sở thích của các món hàng đã mua trong tập huấn luyện: $\mathbf{p}_u = \sum_{j \in \mathcal{N}_u^{(b_K)}} \mathbf{p}_{uj b_K}$.
+trong đó $[\cdot \,\|\, \cdot]$ là phép nối vector, $\odot$ là tích Hadamard từng phần tử, $\sigma(\cdot)$ là hàm kích hoạt sigmoid, và $\mathbf{W}_1, \mathbf{W}_2, \mathbf{W}_3 \in \mathbb{R}^{d \times (2d+K)}$ là các ma trận tham số khả vi. Đối với hành vi đích $b_K$, biểu diễn sở thích tích lũy của người dùng $\mathbf{p}_u$ được tính bằng tổng các vector sở thích trên tập món hàng đã mua trong tập huấn luyện: $\mathbf{p}_u = \sum_{j \in \mathcal{N}_u^{(b_K)}} \mathbf{p}_{uj b_K}$.
 
-Song song với nhánh đồ thị gộp, một nhánh LightGCN thứ hai được áp dụng trên riêng đồ thị của hành vi đích $\mathcal{G}_{\mathrm{buy}}$, tiếp nhận đầu vào là các embedding $\mathbf{e}_u, \mathbf{e}_i$ đã được làm giàu thông tin, tạo ra các vector tinh chế $\hat{\mathbf{e}}_u, \hat{\mathbf{e}}_i$. Điểm dự đoán xác suất tương tác cuối cùng là sự điều hòa giữa ý định điểm và ý định đồ thị lân cận:
+Song song với nhánh đồ thị toàn cục, một nhánh LightGCN thứ hai hoạt động trên đồ thị hành vi đích $\mathcal{G}_{\mathrm{buy}}$ để sinh ra các vector tinh chế $\hat{\mathbf{e}}_u, \hat{\mathbf{e}}_i$. Điểm dự đoán cuối cùng điều hòa tuyến tính giữa nhánh sở thích mục tiêu (Point-wise Preference) và nhánh đồ thị lân cận (Neighborhood-based Preference):
 \begin{equation}
 y_{ui} = (1 - \lambda_u)\,(\mathbf{p}_u \cdot \mathbf{e}_i) + \lambda_u\,(\hat{\mathbf{e}}_u \cdot \hat{\mathbf{e}}_i),
 \label{eq:prediction}
 \end{equation}
-với hệ số điều hòa được xác lập tự động: $\lambda_u = 1 / |\mathcal{N}_u^{(b_K)}|$ khi người dùng có giao dịch mua trong tập huấn luyện ($|\mathcal{N}_u^{(b_K)}| > 0$), và $\lambda_u = 1$ khi người dùng chưa có giao dịch mua nào ($|\mathcal{N}_u^{(b_K)}| = 0$), cho phép mô hình chuyển dịch linh hoạt sang cấu trúc lan truyền đồ thị đối với người dùng mới.
+trong đó công bố gốc xác lập hệ số điều hòa theo quy tắc nghịch đảo tuyến tính: $\lambda_u = 1 / N_u$ khi $N_u > 0$, và $\lambda_u = 1$ khi $N_u = 0$.
 
-Mô hình được huấn luyện bằng hàm mất mát kết hợp bao gồm mất mát entropy chéo nhị phân (BCE), mất mát xếp hạng tương phản Bayesian Personalized Ranking (BPR)~\cite{rendle2009bpr} và điều chuẩn suy giảm trọng số L2:
+Mô hình được tối ưu hóa bằng hàm mục tiêu đa nhiệm kết hợp mất mát entropy chéo nhị phân (BCE), mất mát xếp hạng tương phản Bayesian Personalized Ranking (BPR)~\cite{rendle2009bpr} và số hạng điều chuẩn trọng số $\mathcal{L}_{\mathrm{reg}}$:
 \begin{equation}
 \mathcal{L} = \beta \mathcal{L}_{\mathrm{bce}} + (1 - \beta)\mathcal{L}_{\mathrm{bpr}} + \gamma \mathcal{L}_{\mathrm{reg}},
 \label{eq:total_loss}
 \end{equation}
-trong đó $\beta = 0{,}3$, $\gamma = 10^{-4}$, tập mẫu âm $\mathcal{S}_u^-$ chứa 4 món hàng chưa từng có tương tác cho mỗi mẫu dương, và hai hàm mất mát thành phần được định nghĩa theo:
+với $\beta = 0{,}3$, $\gamma = 10^{-4}$, tập mẫu âm $\mathcal{S}_u^-$ gồm 4 món hàng chưa tương tác cho mỗi mẫu dương, cùng hai hàm thành phần:
 \begin{equation}
-\mathcal{L}_{\mathrm{bce}} = -\frac{1}{|\mathcal{D}_{\mathrm{all}}|} \sum_{(u, i, b) \in \mathcal{D}_{\mathrm{all}}} \left[\log \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_i) + \sum_{j \in \mathcal{S}_u^-} \log(1 - \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_j))\right],
+\mathcal{L}_{\mathrm{bce}} = -\frac{1}{|\mathcal{D}_{\mathrm{all}}|} \sum_{(u, i, b) \in \mathcal{D}_{\mathrm{all}}} \left[\log \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_i) + \sum_{j \in \mathcal{S}_u^-} \log(1 - \sigma(\mathbf{p}_{ujb} \cdot \mathbf{e}_j))\right],
 \end{equation}
 \begin{equation}
-\mathcal{L}_{\mathrm{bpr}} = -\sum_{(u, i) \in \mathcal{D}_{\mathrm{buy}}, j \in \mathcal{S}_u^-} \ln \sigma(y_{ui} - y_{uj}).
+\mathcal{L}_{\mathrm{bpr}} = -\frac{1}{|\mathcal{D}_{\mathrm{bpr}}|} \sum_{(u, i, j) \in \mathcal{D}_{\mathrm{bpr}}} \ln \sigma(y_{ui} - y_{uj}).
 \end{equation}
 
-\subsection{Biến thể Hàm Mất mát Có Trọng số Chuẩn hóa}
+\subsection{Hướng Tiếp cận Cải tiến Thứ nhất: Tái cân bằng Nghịch đảo Tần suất trên Khung Cơ sở}
 \label{sec:weighted}
 
-Hàm mất mát $\mathcal{L}_{\mathrm{bce}}$ nguyên bản lấy trung bình số học đồng đều trên mọi mẫu tương tác, dẫn tới nguy cơ gradient bị lấn át bởi hành vi xem lướt vốn chiếm số lượng áp đảo. Để giải quyết hiện tượng này, một cơ chế tái cân bằng kỳ vọng đóng góp được đề xuất bằng cách gán hệ số ưu tiên $\alpha_b$ cho từng hành vi $b \in B$, với thiết lập $\alpha_{\mathrm{cart}} = 2$, $\alpha_{\mathrm{buy}} = 2$ cho các hành vi giỏ hàng và mua hàng, cùng $\alpha_{\mathrm{click}} = \alpha_{\mathrm{collect}} = 1$ cho các hành vi xem và lưu trữ.
+Trong hàm mất mát $\mathcal{L}_{\mathrm{bce}}$ nguyên bản, mọi mẫu tương tác thuộc các hành vi khác nhau đều có trọng số đóng góp ngang bằng. Trên các bộ dữ liệu thương mại điện tử có số lượng tương tác xem lướt lớn gấp hàng trăm lần tương tác giỏ hàng, đạo hàm của hàm mất mát BCE có nguy cơ bị chi phối bởi hành vi xem lướt. Hướng tiếp cận cải tiến thứ nhất khảo sát việc tái cân bằng kỳ vọng đóng góp thông qua thừa số nghịch đảo tần suất $N_{\mathrm{all}}/n_b$ với hai biến thể: biến thể tĩnh (\texttt{BIPN-InvWeight}) gán hệ số ưu tiên cố định $\alpha_{\mathrm{cart}} = \alpha_{\mathrm{buy}} = 2$, $\alpha_{\mathrm{click}} = \alpha_{\mathrm{collect}} = \alpha_{\mathrm{view}} = 1$; và biến thể softmax (\texttt{BIPN-InvLearned}) học phân phối $\alpha_b$ quanh $\ln n_b$.
 
-Gọi $n_b$ là tổng số mẫu của hành vi $b$, $N = \sum_{b} n_b$ là tổng số mẫu trong tập huấn luyện, và $A = \sum_{b} \alpha_b$. Trọng số chuẩn hóa gán cho mỗi mẫu tương tác thuộc hành vi $b$ được xác định theo:
+Gọi $n_b = |\mathcal{D}_b|$ là số lượng mẫu huấn luyện BCE của hành vi $b$, $N_{\mathrm{all}} = \sum_{b \in B} n_b = |\mathcal{D}_{\mathrm{all}}|$ là tổng số mẫu tương tác toàn cục, và $A = \sum_{b \in B} \alpha_b$. Trọng số gán cho mỗi mẫu tương tác thuộc hành vi $b$ trong hướng tiếp cận thứ nhất được xác định theo quy tắc nghịch đảo tần suất:
 \begin{equation}
-w_b = \frac{\alpha_b \cdot N}{n_b \cdot A}.
+w_b^{\mathrm{inv}} = \frac{\alpha_b \cdot N_{\mathrm{all}}}{n_b \cdot A}.
 \label{eq:weight_norm}
 \end{equation}
 Khi đó, hàm mất mát BCE có trọng số được biểu diễn bởi:
 \begin{equation}
-\mathcal{L}_{\mathrm{wbce}} = -\frac{1}{N} \sum_{b \in B} \sum_{(u, i) \in \mathcal{D}_b} w_b \left[\log \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_i) + \sum_{j \in \mathcal{S}_u^-} \log(1 - \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_j))\right].
+\mathcal{L}_{\mathrm{wbce}} = -\frac{1}{N_{\mathrm{all}}} \sum_{b \in B} \sum_{(u, i) \in \mathcal{D}_b} w_b^{\mathrm{inv}} \left[\log \sigma(\mathbf{p}_{uib} \cdot \mathbf{e}_i) + \sum_{j \in \mathcal{S}_u^-} \log(1 - \sigma(\mathbf{p}_{ujb} \cdot \mathbf{e}_j))\right].
 \end{equation}
-Công thức chuẩn hóa trong phương trình~(\ref{eq:weight_norm}) bảo đảm hai tính chất toán học cơ bản: tổng trọng số được bảo toàn ở mức $\sum_{b} n_b w_b = N$ giúp duy trì thang đo nguyên bản của hàm mất mát, đồng thời kỳ vọng đóng góp gradient của từng hành vi tỷ lệ chính xác với hệ số $\alpha_b$.
+Mặc dù công thức~(\ref{eq:weight_norm}) bảo toàn tổng trọng số ở mức $\sum_{b \in B} n_b w_b^{\mathrm{inv}} = N_{\mathrm{all}}$ và giữ cho tổng đóng góp lý thuyết của từng hành vi tỷ lệ thuận với $\alpha_b$, sự hiện diện của mẫu số $n_b$ gây ra hệ quả bất lợi khi phân bố dữ liệu bị lệch cực đoan: nếu $n_{\mathrm{cart}} \ll N_{\mathrm{all}}$ (như trên tập Tmall với $n_{\mathrm{cart}} / N_{\mathrm{all}} \approx 0{,}09\%$), trọng số $w_{\mathrm{cart}}^{\mathrm{inv}}$ của một mẫu đơn lẻ bị nhân lên tới $370{,}5$ lần. Khi đặt trên khung cơ sở sử dụng công thức~(\ref{eq:gcn_base}) chưa chuẩn hóa đơn vị xuyên tầng và điều chuẩn tổng bình phương $\mathcal{L}_{\mathrm{reg}} = \lVert E_u^{(0)} \rVert_F^2 + \lVert E_i^{(0)} \rVert_F^2$, các xung đạo hàm cục bộ này dẫn tới hiện tượng co cụm không gian biểu diễn được phân tích tại Mục~\ref{sec:discussion}.
+
+\subsection{Hướng Tiếp cận Cải tiến Thứ hai: Điều hòa Ý định Logarit Tách pha và Trọng số Hành vi Bảo toàn Thang đo}
+\label{sec:second_approach}
+
+Nhằm khắc phục đồng bộ hiện tượng mất ổn định đạo hàm của hướng tiếp cận thứ nhất và cải thiện quy tắc điều hòa heuristic $\lambda_u = 1/N_u$ được nêu tại Mục 4.4 công bố gốc~\cite{yan2024bipn}, hướng tiếp cận thứ hai được thiết kế gồm ba thành phần kỹ thuật gắn kết chặt chẽ.
+
+\paragraph{1. Chuẩn hóa biểu diễn xuyên tầng và kết nối dư nhánh đồ thị đích.}
+Nhằm bảo đảm tính bất biến về thang đo đối với quy mô tập đỉnh và mật độ cạnh của từng bộ dữ liệu (đồng bộ với kiến trúc thực thi chuẩn của mã nguồn gốc \texttt{official-bipn}), đặt $\tilde{E}^{(0)} = E^{(0)}$; tại mỗi tầng tích chập $l \in \{1, \dots, L\}$, vector biểu diễn của từng đỉnh được chuẩn hóa L2 theo hàng ($\mathrm{Norm}_2(\cdot)$) lên siêu cầu đơn vị $\mathbb{S}^{d-1}$ trước khi tổng hợp. Đồng thời, nhánh đồ thị hành vi đích được bổ sung kết nối dư (residual connection) và số hạng điều chuẩn chuẩn Frobenius được chuẩn hóa theo quy mô tập đỉnh:
+\begin{align}
+\tilde{E}^{(l)} &= \mathrm{Norm}_2\big(\tilde{A} \tilde{E}^{(l-1)}\big), \quad E_{\mathrm{all}} = E^{(0)} + \sum_{l=1}^L \left(1 + \frac{1}{l}\right)\tilde{E}^{(l)}, \label{eq:gcn_aligned} \\
+\hat{E} &= E_{\mathrm{all}} + \mathrm{GCN}_{\mathrm{buy}}(E_{\mathrm{all}}), \quad \mathcal{L}_{\mathrm{reg}} = \frac{\lVert E_u^{(0)} \rVert_F}{M} + \frac{\lVert E_i^{(0)} \rVert_F}{N}, \label{eq:res_reg}
+\end{align}
+trong đó với mọi ma trận biểu diễn $Z \in \mathbb{R}^{(M+N)\times d}$, phép toán $\mathrm{Norm}_2(Z)$ chuẩn hóa từng vector hàng $\mathbf{z}_v$ thành $\mathbf{z}_v / \lVert \mathbf{z}_v \rVert_2$.
+
+\paragraph{2. Cơ chế điều hòa ý định logarit tách pha Huấn luyện -- Suy luận.}
+Xét cấu trúc toán học của điểm dự đoán $y_{ui}$ trong phương trình~(\ref{eq:prediction}). Trong pha tối ưu hóa hàm mất mát tương phản $\mathcal{L}_{\mathrm{bpr}}$, mẫu mục tiêu dương $i \in \mathcal{N}_u^{(b_K)}$ được lấy mẫu trực tiếp từ chính tập lịch sử mua hàng $\mathcal{N}_u^{(b_K)}$ dùng để tính tổng $\mathbf{p}_u = \sum_{k \in \mathcal{N}_u^{(b_K)}} \mathbf{p}_{uk b_K}$. Do bản thân $\mathbf{p}_{uib_K}$ đã hiện diện bên trong tổng $\mathbf{p}_u$ với tỷ trọng đúng bằng $1/N_u$, số lượng món hàng ngữ cảnh độc lập thực sự với mục tiêu $i$ trong pha huấn luyện chỉ là $N_{\mathrm{ctx}}^{\mathrm{train}} = N_u - 1$. Nếu áp dụng $1 - \lambda_u^{\mathrm{train}} > 0$ tại $N_u = 1$ ($N_{\mathrm{ctx}}^{\mathrm{train}} = 0$), phép nhân vô hướng $\mathbf{p}_{uib_K} \cdot \mathbf{e}_i$ gây ra hiện tượng rò rỉ tự tương quan mục tiêu (target self-correlation leakage), khiến mạng lọc sở thích quá khớp nhanh chóng vào chính mẫu đang dự đoán. Do đó, trong pha huấn luyện BPR, hệ số điều hòa được duy trì ở mức $\lambda_u^{\mathrm{train}} = 1 / N_u$ (tức trọng số nhánh sở thích điểm là $1 - \lambda_u^{\mathrm{train}} = (N_u - 1)/N_u$, tương ứng chính xác với tỷ lệ ngữ cảnh độc lập), trong khi mạng lọc sở thích vẫn được huấn luyện đầy đủ thông qua nhánh $\mathcal{L}_{\mathrm{bce}}$.
+
+Ngược lại, trong pha suy luận và xếp hạng trên tập xác thực hoặc tập kiểm tra, mọi món hàng ứng viên $i \notin \mathcal{N}_u^{(b_K)}$ đều nằm ngoài tập lịch sử huấn luyện, nên toàn bộ $N_u$ món hàng đã mua đều đóng vai trò ngữ cảnh hợp lệ ($N_{\mathrm{ctx}}^{\mathrm{rank}} = N_u$) và không xuất hiện tự tương quan. Nhằm khai thác nhánh sở thích cá nhân hóa cho cả nhóm người dùng mới có một giao dịch ($N_u = 1$) đồng thời duy trì tốc độ suy giảm chậm cho nhóm người dùng có nhiều giao dịch ($N_u \ge 2$), hệ số điều hòa suy luận được xác lập theo hàm logarit cơ số 2:
+\begin{equation}
+\lambda_u^{\mathrm{rank}} = \begin{cases}
+1, & \text{nếu } N_u = 0, \\
+\dfrac{1}{1 + \log_2(N_u + 1)}, & \text{nếu } N_u \ge 1.
+\end{cases}
+\label{eq:log_lambda}
+\end{equation}
+Theo phương trình~(\ref{eq:log_lambda}), khi $N_u = 1$, hệ số đạt $\lambda_u^{\mathrm{rank}} = 0{,}50$ (thay vì $1{,}00$ như quy tắc gốc), cho phép kết hợp cân bằng giữa nhánh sở thích mục tiêu và nhánh đồ thị lân cận; khi $N_u = 4$ và $N_u = 8$, hệ số lần lượt giữ mức $0{,}30$ và $0{,}24$ (cao hơn mức $0{,}25$ và $0{,}125$ của hàm $1/N_u$), bảo toàn đóng góp của nhánh đồ thị cộng tác theo đúng định hướng tại Mục 4.4 của công bố gốc~\cite{yan2024bipn}.
+
+\paragraph{3. Trọng số hành vi bảo toàn thang đo và học tự thích nghi có miền chặn.}
+Nhằm loại bỏ sự phụ thuộc vào mẫu số tần suất $n_b$ gây phóng đại đạo hàm trong phương trình~(\ref{eq:weight_norm}), hai biến thể trọng số hành vi ổn định được thiết lập trên tập các hành vi hoạt động $B_{\mathrm{act}} = \{b \in B \mid n_b > 0\}$:
+\begin{itemize}
+\item \textbf{Biến thể chuẩn hóa trung bình (\texttt{BIPN-Weighted}):} Thiết lập hệ số ưu tiên nhẹ $\alpha_b = \alpha_0$ ($\alpha_0 = 1{,}02$) cho hành vi giỏ hàng và hành vi đích, $\alpha_b = 1{,}00$ cho các hành vi còn lại, và chuẩn hóa bảo toàn trung bình đơn vị:
+\begin{equation}
+w_b^{\mathrm{norm}} = \frac{|B_{\mathrm{act}}| \cdot \alpha_b}{\sum_{k \in B_{\mathrm{act}}} \alpha_k}, \quad \frac{1}{|B_{\mathrm{act}}|} \sum_{b \in B_{\mathrm{act}}} w_b^{\mathrm{norm}} = 1.
+\label{eq:w_norm2}
+\end{equation}
+\item \textbf{Biến thể học tự thích nghi có miền chặn (\texttt{BIPN-Learned}):} Kế thừa ý tưởng học trọng số hành vi của MBGCN~\cite{jin2020mbgcn}, mỗi hành vi được gán một tham số khả vi $\theta_b \in \mathbb{R}$ khởi tạo tại $0$, điều biến xung quanh phân phối tiên nghiệm $\alpha_b$ thông qua hàm chặn hyperbolic tangent:
+\begin{equation}
+w_b^{\mathrm{learn}} = |B_{\mathrm{act}}| \cdot \frac{\exp\big(\ln \alpha_b + \delta \tanh(\theta_b)\big)}{\sum_{k \in B_{\mathrm{act}}} \exp\big(\ln \alpha_k + \delta \tanh(\theta_k)\big)},
+\label{eq:w_learned}
+\end{equation}
+kèm theo số hạng điều chuẩn $\lambda_\theta \lVert \boldsymbol{\theta} \rVert_2^2 / |B|$ ($\delta = 0{,}02, \lambda_\theta = 0{,}01$) trong hàm mất mát BCE. Do $\tanh(\theta_b) \in (-1, 1)$, hệ số điều biến luôn nằm trong miền chặn giải tích $[\alpha_b e^{-\delta}, \alpha_b e^{\delta}]$, cho phép trọng số $w_b^{\mathrm{learn}}$ tự tinh chỉnh theo dữ liệu đồng thời ngăn ngừa hiện tượng suy biến trọng số về $0$ hoặc phóng đại đạo hàm cục bộ khi phân bố tần suất hành vi mất cân bằng.
+\end{itemize}
 
 \subsection{Mô hình Đối chứng LightGCN Đơn hành vi}
 \label{sec:lightgcn}
 
-Mô hình đối chứng LightGCN~\cite{he2020lightgcn} trên riêng hành vi đích được triển khai nhằm lượng hóa chính xác giá trị gia tăng mà thông tin đa hành vi mang lại. Mô hình đối chứng chỉ khởi tạo đồ thị tương tác hai phía trên hành vi mua hàng $\mathcal{G}_{\mathrm{buy}}$ và tối ưu hóa hàm mục tiêu BPR kết hợp điều chuẩn suy giảm trọng số L2: $\mathcal{L}_{\mathrm{LightGCN}} = \mathcal{L}_{\mathrm{bpr}} + \gamma (\lVert E_u^{(0)} \rVert^2 + \lVert E_i^{(0)} \rVert^2)$. Nhằm bảo đảm tính khách quan trong việc so sánh đối chứng, mô hình LightGCN được thiết lập cùng số chiều embedding ($d=64$), cùng số tầng lan truyền đồ thị ($L=2$), cùng cơ chế trộn tầng $1/(l+1)$, cùng kích thước batch (1024), tốc độ học ($10^{-4}$) và hạt giống ngẫu nhiên cố định (2021).
+Mô hình đối chứng LightGCN~\cite{he2020lightgcn} trên riêng hành vi đích được triển khai nhằm lượng hóa chính xác giá trị gia tăng mà thông tin đa hành vi mang lại. Mô hình đối chứng chỉ khởi tạo đồ thị tương tác hai phía trên hành vi mua hàng $\mathcal{G}_{\mathrm{buy}}$ và tối ưu hóa hàm mục tiêu BPR kết hợp điều chuẩn trọng số L2. Nhằm bảo đảm tính công bằng trong việc so sánh đối chứng, LightGCN được khảo sát tương ứng trên cả cấu hình cơ sở chưa chuẩn hóa (\texttt{LightGCN-Base}) và cấu hình chuẩn hóa đồng bộ (\texttt{LightGCN-Aligned}) với cùng số chiều nhúng ($d=64$), cùng số tầng lan truyền ($L=2$), kích thước batch (1024), tốc độ học ($10^{-4}$) và hạt giống ngẫu nhiên cố định (2021).
 
 \section{Thực nghiệm và Đánh giá}
 \label{sec:exp}
@@ -118,11 +164,9 @@ Mô hình đối chứng LightGCN~\cite{he2020lightgcn} trên riêng hành vi đ
 \subsection{Dữ liệu Thực nghiệm}
 \label{sec:datasets}
 
-Nghiên cứu sử dụng hai tập dữ liệu thương mại điện tử với quy mô tương tác và đặc trưng phân bố phễu hành vi khác biệt. Tập dữ liệu thứ nhất là Tmall, tập chuẩn công bố kèm theo mô hình gốc BIPN~\cite{yan2024bipn}, đại diện cho nền tảng thương mại điện tử quy mô lớn tại thị trường châu Á. Tập dữ liệu thứ hai là Retailrocket, thu thập từ nền tảng bán lẻ trực tuyến phương Tây do công ty Retailrocket công bố công khai~\cite{retailrocket2016}.
+Nghiên cứu sử dụng hai tập dữ liệu thương mại điện tử với quy mô tương tác và đặc trưng phân bố phễu hành vi khác biệt. Tập dữ liệu thứ nhất là Tmall, bộ dữ liệu chuẩn được công bố kèm theo mô hình gốc BIPN~\cite{yan2024bipn}, đại diện cho nền tảng thương mại điện tử tổng hợp quy mô lớn tại thị trường châu Á. Tập dữ liệu thứ hai là Retailrocket, được thu thập từ nền tảng bán lẻ trực tuyến phương Tây do công ty Retailrocket công bố công khai~\cite{retailrocket2016}.
 
-Đối với tập dữ liệu Retailrocket, quy trình tiền xử lý được thực hiện nhằm lọc giữ các người dùng có phát sinh giao dịch mua hàng và ánh xạ các sự kiện tương ứng thành ba hành vi `view', `cart' và `buy'. Nhằm triệt tiêu hoàn toàn nguy cơ rò rỉ dữ liệu tương lai, phương pháp phân chia theo dòng thời gian được áp dụng: giao dịch mua hàng cuối cùng theo thời gian của từng người dùng được trích xuất vào tập kiểm tra; giao dịch mua áp chót được đưa vào tập xác thực đối với người dùng có từ ba lần mua trở lên; và toàn bộ các tương tác xem hay giỏ hàng chỉ được đưa vào tập huấn luyện nếu thời điểm phát sinh xảy ra trước giao dịch mua bị tách ra sớm nhất của người dùng đó.
-
-Để xác định các đặc trưng cấu trúc nền tảng của không gian tương tác bao gồm quy mô đỉnh, phân tầng hành vi và mức độ thưa thớt của ma trận dữ liệu làm cơ sở đối chiếu cho các đánh giá hiệu năng tiếp theo, Bảng~\ref{tab:data} tổng hợp các thông số thống kê định lượng của hai tập dữ liệu Tmall và Retailrocket sau quy trình tiền xử lý.
+Đối với tập dữ liệu Retailrocket, quy trình tiền xử lý được thực hiện nhằm lọc giữ các người dùng có phát sinh giao dịch mua hàng và ánh xạ các sự kiện tương ứng thành ba hành vi \texttt{view}, \texttt{cart} và \texttt{buy}. Nhằm ngăn ngừa hiện tượng rò rỉ dữ liệu tương lai (data leakage) trong đánh giá xếp hạng, phương pháp phân chia theo dòng thời gian được áp dụng nghiêm ngặt: giao dịch mua hàng cuối cùng theo thời gian của từng người dùng được trích xuất vào tập kiểm tra; giao dịch mua áp chót được đưa vào tập xác thực đối với những người dùng có từ ba lần mua trở lên; và toàn bộ các tương tác xem hoặc thêm vào giỏ hàng chỉ được giữ lại trong tập huấn luyện nếu thời điểm phát sinh diễn ra trước giao dịch mua bị tách ra sớm nhất của người dùng đó. Bảng~\ref{tab:data} tổng hợp các thông số thống kê định lượng của hai tập dữ liệu sau quy trình tiền xử lý.
 
 \begin{table}[H]
 \caption{Thống kê định lượng hai bộ dữ liệu thực nghiệm sau tiền xử lý.}
@@ -132,16 +176,16 @@ Nghiên cứu sử dụng hai tập dữ liệu thương mại điện tử vớ
 \toprule
 \textbf{Chỉ số Thống kê} & \textbf{Tmall (Tập chuẩn)} & \textbf{Retailrocket (Tập mới)} \\
 \midrule
-Số lượng người dùng ($|U|$) & 41.738 & 11.719 \\
-Số lượng món hàng ($|I|$) & 11.953 & 31.839 \\
-Hành vi xem (`click' / `view') & 1.813.498 dòng (81{,}75\%) & 88.304 dòng (73{,}78\%) \\
-Hành vi lưu trữ (`collect') & 221.514 dòng (9{,}99\%) & --- \\
-Hành vi giỏ hàng (`cart') & 1.996 dòng (0{,}09\%) & 22.716 dòng (18{,}98\%) \\
-Hành vi đích (`buy') & 181.428 dòng (8{,}18\%) & 8.666 dòng (7{,}24\%) \\
+Số lượng người dùng ($M = |U|$) & 41.738 & 11.719 \\
+Số lượng món hàng ($N = |I|$) & 11.953 & 31.839 \\
+Hành vi xem (\texttt{click} / \texttt{view}) & 1.813.498 lượt (81{,}75\%) & 88.304 lượt (73{,}78\%) \\
+Hành vi lưu trữ (\texttt{collect}) & 221.514 lượt (9{,}99\%) & --- \\
+Hành vi giỏ hàng (\texttt{cart}) & 1.996 lượt (0{,}09\%) & 22.716 lượt (18{,}98\%) \\
+Hành vi đích (\texttt{buy}) & 181.428 lượt (8{,}18\%) & 8.666 lượt (7{,}24\%) \\
 \midrule
-\textbf{Tổng số tương tác Huấn luyện} & \textbf{2.218.436 dòng} & \textbf{119.686 dòng} \\
-Số tương tác Xác thực (Validation) & 74.158 dòng & 885 dòng \\
-Số tương tác Kiểm tra (Test) & 31.572 dòng & 11.719 dòng \\
+\textbf{Tổng mẫu tương tác Huấn luyện ($N_{\mathrm{all}}$)} & \textbf{2.218.436 lượt} & \textbf{119.686 lượt} \\
+Số mẫu tương tác Xác thực (Validation) & 74.158 lượt & 885 lượt \\
+Số mẫu tương tác Kiểm tra (Test) & 31.572 lượt & 11.719 lượt \\
 \midrule
 Mật độ tương tác mua trung bình & 4{,}75 lượt mua/user & 0{,}74 lượt mua/user \\
 Độ thưa thớt hành vi mua (Sparsity) & 99{,}64\% & 99{,}98\% \\
@@ -150,9 +194,7 @@ Tỷ lệ Xem / Giỏ hàng & 908 : 1 & 3{,}89 : 1 \\
 \end{tabular}
 \end{table}
 
-Dữ liệu thống kê trong Bảng~\ref{tab:data} chỉ ra sự tương phản rõ rệt về cấu trúc dữ liệu giữa hai nền tảng. Cụ thể, tập Tmall có số lượng tương tác xem đạt 1.813.498 dòng trong khi hành vi giỏ hàng chỉ có 1.996 dòng, tạo ra tỷ lệ chênh lệch lên tới 908:1. Ngược lại, tập Retailrocket thể hiện tỷ lệ xem so với giỏ hàng cân bằng hơn ở mức 3{,}89:1, song mật độ giao dịch mua lại rất thấp khi 11.719 người dùng chỉ tạo ra 8.666 lượt mua trong tập huấn luyện (bình quân 0{,}74 lượt mua/người), đẩy độ thưa ma trận lên tới 99{,}98\%.
-
-Do tỷ trọng giữa các hành vi tương tác ảnh hưởng trực tiếp đến sự phân bổ gradient trong quá trình tối ưu hóa hàm mất mát, việc phân tích trực quan cấu trúc phễu hành vi là bước cần thiết để kiểm tra mức độ cân bằng của dữ liệu. Hình~\ref{fig:distribution} minh họa tỷ lệ tương đối giữa các loại hành vi người dùng trên hai bộ dữ liệu thực nghiệm.
+Dữ liệu thống kê trong Bảng~\ref{tab:data} chỉ ra sự tương phản rõ rệt về cấu trúc phân phối giữa hai nền tảng. Cụ thể, tập Tmall ghi nhận 1.813.498 lượt tương tác xem trong khi hành vi giỏ hàng chỉ có 1.996 lượt, tạo ra tỷ lệ chênh lệch lên tới 908:1. Ngược lại, tập Retailrocket thể hiện tỷ lệ xem so với giỏ hàng cân bằng hơn ở mức 3{,}89:1, song mật độ giao dịch mua huấn luyện lại rất thấp khi 11.719 người dùng chỉ tạo ra 8.666 lượt mua trong tập huấn luyện (bình quân 0{,}74 lượt mua/người, do có tới 68{,}4\% người dùng chỉ phát sinh duy nhất một giao dịch mua và giao dịch này đã được tách vào tập kiểm tra), đẩy độ thưa ma trận hành vi đích lên tới 99{,}98\%. Hình~\ref{fig:distribution} minh họa tỷ lệ tương đối giữa các loại hành vi người dùng trên hai bộ dữ liệu thực nghiệm.
 
 \begin{figure}[H]
 \centering
@@ -161,72 +203,88 @@ Do tỷ trọng giữa các hành vi tương tác ảnh hưởng trực tiếp �
 \label{fig:distribution}
 \end{figure}
 
-Phân bố phễu tương tác trên Hình~\ref{fig:distribution} phản ánh đặc trưng tiêu dùng khác biệt giữa hai thị trường. Trên nền tảng Tmall, người dùng có xu hướng duyệt hàng dạo chiếm ưu thế tuyệt đối (81{,}75\%) hoặc thêm vào danh sách yêu thích (9{,}99\%), và thường đưa ra quyết định mua hàng trực tiếp mà không thông qua bước đưa vào giỏ hàng (hành vi giỏ hàng chỉ chiếm 0{,}09\%). Trái lại, nền tảng Retailrocket vận hành theo mô hình giỏ hàng trực tuyến truyền thống khi hành vi đưa vào giỏ chiếm tới 18{,}98\% tổng lượng tương tác, tạo điều kiện thuận lợi để kiểm chứng mức độ thích ứng của mô hình trước các dạng phân bố hành vi khác nhau.
+Phân bố phễu tương tác trên Hình~\ref{fig:distribution} phản ánh đặc trưng hành vi tiêu dùng khác biệt giữa hai thị trường. Trên nền tảng Tmall, tương tác duyệt xem sản phẩm không chủ đích chiếm tỷ trọng áp đảo (81{,}75\%), theo sau là hành vi lưu vào danh sách yêu thích (9{,}99\%), và người dùng thường đưa ra quyết định mua hàng trực tiếp mà ít thông qua bước lưu giỏ hàng (chỉ chiếm 0{,}09\%). Trái lại, nền tảng Retailrocket vận hành theo mô hình giỏ hàng trực tuyến truyền thống khi hành vi đưa vào giỏ chiếm tới 18{,}98\% tổng lượng tương tác, tạo điều kiện thuận lợi để kiểm chứng mức độ thích ứng của các hướng tiếp cận trước các dạng phân bố hành vi khác nhau.
 
 \subsection{Thiết lập Môi trường Thực nghiệm và Tối ưu hóa Hệ thống}
 \label{sec:setup}
 
-Thực nghiệm được triển khai trên phần cứng máy tính trang bị vi xử lý Intel Core Ultra 9 185H, bộ nhớ RAM 32 GB LPDDR5x, và card đồ họa NVIDIA GeForce RTX 4050 Laptop GPU (6 GB VRAM) chạy PyTorch 2.14.1 trên nền tảng CUDA 13.0.
+Hệ thống thực nghiệm được triển khai trên cấu hình phần cứng trang bị vi xử lý Intel Core Ultra 9 185H, bộ nhớ RAM 32 GB LPDDR5x, và card đồ họa NVIDIA GeForce RTX 4050 Laptop GPU (6 GB VRAM) vận hành trên môi trường PyTorch 2.14.1 (nền tảng CUDA 13.0). Nhằm đáp ứng giới hạn bộ nhớ phần cứng cá nhân mà không làm thay đổi kết quả tính toán lý thuyết, ma trận kề thưa của đồ thị được lưu đệm cố định trên VRAM ngay từ bước khởi tạo; đồng thời, thuật toán lấy mẫu âm được vector hóa thông qua ma trận đánh dấu nhị phân kết hợp cấu trúc hàng đợi nén CSR cho lịch sử giao dịch đích và phép trích xuất Top-$N_{\mathrm{rec}}$ trực tiếp trên GPU. Chuỗi tối ưu hóa kỹ thuật này giúp rút ngắn thời gian huấn luyện mỗi epoch trên tập Tmall từ 16{,}5 phút xuống còn 6{,}2 phút đối với mã nguồn gốc và giảm xuống 3{,}8 phút đối với khung thực nghiệm vector hóa.
 
-Quá trình thực thi trên máy tính cá nhân được hỗ trợ bởi bốn giải pháp tối ưu hóa phần mềm nhằm khắc phục hạn chế về bộ nhớ mà không làm thay đổi các giá trị tính toán lý thuyết. Trước hết, ma trận kề thưa đồ thị kích thước 1{,}2 GB được lưu đệm cố định trên VRAM ngay lúc khởi tạo, triệt tiêu hoàn toàn thao tác truyền tải lặp lại 8.600 lần mỗi epoch qua bus PCIe. Tiếp theo, thuật toán lấy mẫu âm được chuyển đổi từ phép quét mảng tuyến tính $O(N)$ bằng `np.isin` sang cấu trúc bảng băm `set` với chi phí tra cứu $O(1)$. Đồng thời, cơ chế bộ nhớ ghim kết hợp truyền dữ liệu bất đồng bộ qua kênh DMA của GPU và công cụ cuDNN Benchmark Auto-tuner được kích hoạt. Chuỗi cải tiến kỹ thuật này làm tăng tốc độ lặp từ 2{,}1 lên 6{,}8 vòng lặp/giây (nhanh hơn 3{,}24 lần), rút ngắn thời gian mỗi epoch từ 16{,}5 phút xuống còn 6{,}2 phút.
-
-Mô hình sử dụng các siêu tham số chuẩn theo kịch bản gốc: số chiều embedding 64, 2 tầng tích chập GCN, kích thước batch 1024, tỷ lệ mẫu âm 4:1, tốc độ học $10^{-4}$ với bộ tối ưu Adam, hệ số cân bằng mất mát $\beta = 0{,}3$, hệ số suy giảm trọng số L2 $10^{-4}$, và seed ngẫu nhiên 2021. Cơ chế dừng sớm được kích hoạt với độ kiên nhẫn 5 epoch liên tiếp dựa trên chỉ số Hit@20 của tập xác thực. Hiệu năng được đánh giá qua hai thang đo chuẩn là Tỷ lệ trúng đích (Hit Rate - HR@$K$) và Độ lợi tích lũy giảm dần chuẩn hóa (Normalized Discounted Cumulative Gain - NDCG@$K$) tại hai ngưỡng $K \in \{10, 20\}$.
+Toàn bộ các biến thể mô hình sử dụng bộ siêu tham số chuẩn theo kịch bản gốc: số chiều nhúng $d=64$, $L=2$ tầng tích chập GCN, kích thước batch 1024, tỷ lệ mẫu âm 4:1, tốc độ học $10^{-4}$ với bộ tối ưu Adam, hệ số cân bằng mất mát $\beta = 0{,}3$, hệ số điều chuẩn $\gamma = 10^{-4}$, và hạt giống ngẫu nhiên 2021. Trong quá trình huấn luyện, mô hình tốt nhất được lựa chọn dựa trên chỉ số xác thực (Validation) thông qua cơ chế dừng sớm (early stopping) với độ kiên nhẫn 5 epoch đối với bản tái lập cơ sở và Hướng tiếp cận 1, và 10 epoch đối với các mô hình chuẩn hóa đồng bộ ở Hướng tiếp cận 2. Hiệu năng xếp hạng được đánh giá qua hai thước đo chuẩn là Tỷ lệ trúng đích (Hit Rate -- HR@$N_{\mathrm{rec}}$) và Độ lợi tích lũy giảm dần chuẩn hóa (Normalized Discounted Cumulative Gain -- NDCG@$N_{\mathrm{rec}}$) tại hai ngưỡng cắt danh sách gợi ý $N_{\mathrm{rec}} \in \{10, 20\}$.
 
 \subsection{Động thái Tối ưu hóa và Động lực Hội tụ}
 \label{sec:convergence}
 
-Nhằm kiểm chứng tính ổn định số học của hàm mất mát kết hợp đa mục tiêu cũng như xác định điểm bão hòa kiểm soát hiện tượng quá khớp trong quá trình huấn luyện, việc theo dõi động thái biến thiên đồng thời của mất mát huấn luyện và chỉ số xếp hạng trên tập xác thực là yêu cầu bắt buộc. Hình~\ref{fig:convergence} trực quan hóa tiến trình tối ưu hóa của mô hình BIPN trên tập dữ liệu Tmall qua 38 epoch thực tế.
+Nhằm kiểm chứng tính ổn định số học của hàm mất mát kết hợp đa mục tiêu cũng như xác định điểm bão hòa để kiểm soát hiện tượng quá khớp, tiến trình biến thiên đồng thời của hàm mất mát huấn luyện và chỉ số xếp hạng trên tập xác thực được ghi nhận xuyên suốt các chu kỳ học. Hình~\ref{fig:convergence} trực quan hóa đối sánh quỹ đạo tối ưu hóa trên tập dữ liệu Tmall giữa mô hình BIPN tái lập gốc (38 epoch, dừng sớm với độ kiên nhẫn 5 epoch sau khi đạt đỉnh tại epoch 33) và biến thể đề xuất ở Hướng tiếp cận 2 (\texttt{BIPN-Weighted}, 68 epoch, dừng sớm với độ kiên nhẫn 10 epoch sau khi đạt đỉnh tại epoch 58). Đường cong tiến triển cho thấy quá trình học diễn ra qua ba giai đoạn rõ rệt: trong 5 epoch khởi đầu, hàm mất mát giảm nhanh từ vùng 0{,}180 xuống 0{,}103 đi kèm sự gia tăng mạnh của chỉ số xác thực, phản ánh giai đoạn đồ thị toàn cục phân tách thô các cặp tương tác dương khỏi các mẫu âm ngẫu nhiên; trong giai đoạn tiếp theo, hàm mất mát hội tụ dần về vùng 0{,}064--0{,}070 cùng sự tăng trưởng ổn định của chỉ số xác thực, cho thấy mạng nơ-ron lọc sở thích đang học cách giảm thiểu nhiễu từ các tương tác xem lướt để trích xuất tín hiệu mua hàng. Trong khi bản tái lập gốc bão hòa tại epoch 33 ($\text{Valid HR@20} = 0{,}3094$), mô hình \texttt{BIPN-Weighted} ở Hướng tiếp cận 2 duy trì quỹ đạo xác thực cao hơn ngay từ epoch đầu tiên và tiếp tục hội tụ tới đỉnh tối ưu tại epoch 58 ($\text{Valid HR@20} = 0{,}3238$, $\text{Valid HR@10} = 0{,}2397$) mà không xuất hiện hiện tượng phân kỳ đạo hàm.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig_convergence_curve_vi}
-\caption{Đường cong động thái huấn luyện của BIPN trên bộ dữ liệu Tmall qua 38 epoch: Mất mát huấn luyện (Train Loss) trục trái và Độ đo xác thực Hit@20 trục phải.}
+\caption{Động học hội tụ huấn luyện trên bộ dữ liệu Tmall: Đối sánh quỹ đạo mất mát huấn luyện (trục trái) và độ đo xác thực Hit@20/HR@20 (trục phải) giữa bản tái lập gốc (38 epoch) và Hướng tiếp cận 2 (68 epoch).}
 \label{fig:convergence}
 \end{figure}
 
-Đường cong tiến triển trên Hình~\ref{fig:convergence} cho thấy quá trình học diễn ra qua ba giai đoạn rõ rệt. Trong 5 epoch khởi đầu, hàm mất mát giảm mạnh từ 0{,}1806 xuống 0{,}1042 trong khi chỉ số Hit@20 trên tập xác thực tăng từ 0{,}0912 lên 0{,}2242, phản ánh giai đoạn đồ thị gộp phân tách thô các cặp tương tác thực khỏi các mẫu ngẫu nhiên. Trong giai đoạn tiếp theo từ epoch 6 đến epoch 33, hàm mất mát tiếp tục hội tụ tiệm cận về 0{,}0701 cùng sự tăng trưởng ổn định của chỉ số xác thực, khẳng định mạng nơ-ron điều hướng hai chiều đang học cách lọc nhiễu từ các hành vi xem dạo để trích xuất tín hiệu mua hàng. Tại epoch 33, chỉ số xác thực đạt giá trị cực đại 0{,}3094. Trong 5 epoch kế tiếp (từ epoch 34 đến epoch 38), chỉ số xác thực bắt đầu bão hòa và suy giảm nhẹ (lần lượt đạt 0{,}3081; 0{,}3079; 0{,}3085; 0{,}3072; 0{,}3078), kích hoạt cơ chế dừng sớm tại epoch 38 để bảo toàn điểm tối ưu tại epoch 33. Quá trình hội tụ liên tục và không xuất hiện hiện tượng phân kỳ gradient khẳng định tính ổn định của quy trình tối ưu hóa.
-
-\subsection{Kết quả Thực nghiệm Tổng thể và Phân tích So sánh}
+\subsection{Kết quả Thực nghiệm Tổng thể và Phân tích Đối sánh Hai Hướng Tiếp cận}
 \label{sec:results}
 
-Nhằm kiểm chứng giả thuyết về tính vượt trội của kiến trúc đa hành vi so với mô hình đơn hành vi, đồng thời định lượng tác động thực tế của biến thể hàm mất mát có trọng số trên các phân phối dữ liệu khác nhau, việc đánh giá độc lập trên tập kiểm tra thông qua các thước đo xếp hạng chuẩn quốc tế là bắt buộc. Bảng~\ref{tab:result} trình bày kết quả đánh giá thực nghiệm của các mô hình trên hai bộ dữ liệu theo các ngưỡng cắt lọc Top-10 và Top-20.
+Nhằm đánh giá toàn diện năng lực của kiến trúc đa hành vi so với đơn hành vi cũng như bóc tách khách quan đóng góp của từng thành phần trong hai hướng tiếp cận cải tiến, Bảng~\ref{tab:result} tổng hợp kết quả thực nghiệm trên tập xác thực và tập kiểm tra của toàn bộ các cấu hình mô hình trên hai bộ dữ liệu Tmall và Retailrocket.
 
 \begin{table}[H]
-\caption{Kết quả đánh giá xếp hạng trên tập kiểm tra (Test Set).}
+\caption{Kết quả đánh giá xếp hạng trên tập xác thực và tập kiểm tra qua các cấu hình mô hình và hai hướng tiếp cận cải tiến (mô hình được chọn tại epoch đạt đỉnh Validation; ký hiệu $^*$ và $^{**}$ lần lượt biểu thị mức ý nghĩa thống kê $p < 0{,}01$ và $p < 0{,}001$ theo kiểm định t-test cặp so với mô hình BIPN chuẩn tương ứng).}
 \label{tab:result}
 \centering
-\begin{tabular}{llccccc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllcccccc}
 \toprule
-\textbf{Bộ dữ liệu} & \textbf{Mô hình Thực nghiệm} & \textbf{Best Epoch} & \textbf{HR@10} & \textbf{NDCG@10} & \textbf{HR@20} & \textbf{NDCG@20} \\
+\textbf{Bộ dữ liệu} & \textbf{Phân nhóm Tiếp cận} & \textbf{Mô hình Thực nghiệm} & \textbf{Epoch} & \textbf{Valid HR@10} & \textbf{Test HR@10} & \textbf{Test NDCG@10} & \textbf{Test HR@20} & \textbf{Test NDCG@20} \\
 \midrule
-\textbf{Tmall} & \textbf{BIPN (Gốc)} & Epoch 33 & \textbf{0{,}1398} & \textbf{0{,}0736} & \textbf{0{,}2000} & \textbf{0{,}0884} \\
-\textbf{Tmall} & BIPN có trọng số & Epoch 4 & 0{,}0071 & 0{,}0032 & 0{,}0127 & 0{,}0046 \\
-\textbf{Tmall} & LightGCN (Đối chứng) & Epoch 20 & 0{,}0141 & 0{,}0070 & 0{,}0197 & 0{,}0083 \\
+\textbf{Tmall} & Tham chiếu công bố gốc & BIPN (SIGIR 2024~\cite{yan2024bipn}) & --- & --- & 0{,}1414 & 0{,}0741 & 0{,}2033 & 0{,}0898 \\
+\textbf{Tmall} & Tái lập chuẩn ($\lambda_u = 1/N_u$, pat=5) & BIPN (\texttt{official-bipn}) & Ep 33 & 0{,}2249 & 0{,}1398 & 0{,}0736 & 0{,}2000 & 0{,}0884 \\
+\cmidrule(lr){2-9}
+\textbf{Tmall} & Hướng tiếp cận 1 & LightGCN-Base (Đối chứng) & Ep 20 & 0{,}0236 & 0{,}0141 & 0{,}0070 & 0{,}0197 & 0{,}0083 \\
+\textbf{Tmall} & (Khung cơ sở, trọng số $N_{\mathrm{all}}/n_b$) & BIPN-InvLearned (Softmax $N_{\mathrm{all}}/n_b$) & Ep 1 & 0{,}0154 & 0{,}0089 & 0{,}0045 & 0{,}0132 & 0{,}0055 \\
+\textbf{Tmall} & & BIPN-InvWeight ($\alpha=2$) & Ep 4 & 0{,}0120 & 0{,}0071 & 0{,}0032 & 0{,}0127 & 0{,}0046 \\
+\cmidrule(lr){2-9}
+\textbf{Tmall} & Hướng tiếp cận 2 & LightGCN-Aligned (Đối chứng) & Ep 56 & 0{,}0595 & 0{,}0369 & 0{,}0199 & 0{,}0492 & 0{,}0229 \\
+\textbf{Tmall} & (Chuẩn hóa đồng bộ, $\lambda_u^{\mathrm{rank}}$ logarit & BIPN-Aligned ($\lambda_u = 1/N_u$, pat=10) & Ep 47 & 0{,}2268 & 0{,}1410 & 0{,}0732 & 0{,}2032 & 0{,}0884 \\
+\textbf{Tmall} & \& Trọng số bảo toàn thang đo) & \textbf{BIPN-Learned (Đề xuất)} & \textbf{Ep 47} & \textbf{0{,}2391}$^{**}$ & \textbf{0{,}1460}$^{*}$ & \textbf{0{,}0772}$^{*}$ & \textbf{0{,}2075}$^{*}$ & \textbf{0{,}0923}$^{*}$ \\
+\textbf{Tmall} & & \textbf{BIPN-Weighted (Đề xuất)} & \textbf{Ep 58} & \textbf{0{,}2397}$^{**}$ & \textbf{0{,}1472}$^{**}$ & \textbf{0{,}0771}$^{*}$ & \textbf{0{,}2108}$^{**}$ & \textbf{0{,}0928}$^{**}$ \\
 \midrule
-\textbf{Retailrocket} & \textbf{BIPN} & Epoch 1 & \textbf{0{,}1275} & \textbf{0{,}0901} & \textbf{0{,}1515} & \textbf{0{,}0962} \\
-\textbf{Retailrocket} & BIPN có trọng số & Epoch 1 & 0{,}1229 & 0{,}0865 & 0{,}1482 & 0{,}0929 \\
-\textbf{Retailrocket} & LightGCN (Đối chứng) & Epoch 1 & 0{,}0003 & 0{,}0001 & 0{,}0007 & 0{,}0002 \\
+\textbf{Retailrocket} & Hướng tiếp cận 1 & LightGCN-Base (Đối chứng) & Ep 1 & 0{,}0011 & 0{,}0003 & 0{,}0001 & 0{,}0007 & 0{,}0002 \\
+\textbf{Retailrocket} & (Khung cơ sở, trọng số $N_{\mathrm{all}}/n_b$) & BIPN-Base ($\lambda_u = 1/N_u$) & Ep 1 & 0{,}0814 & 0{,}1275 & 0{,}0901 & 0{,}1515 & 0{,}0962 \\
+\textbf{Retailrocket} & & BIPN-InvWeight ($\alpha=2$) & Ep 1 & 0{,}0757 & 0{,}1229 & 0{,}0865 & 0{,}1482 & 0{,}0929 \\
+\cmidrule(lr){2-9}
+\textbf{Retailrocket} & Hướng tiếp cận 2 & LightGCN-Aligned (Đối chứng) & Ep 12 & 0{,}0226 & 0{,}0046 & 0{,}0035 & 0{,}0055 & 0{,}0037 \\
+\textbf{Retailrocket} & (Chuẩn hóa đồng bộ, $\lambda_u^{\mathrm{rank}}$ logarit & BIPN-Aligned ($\lambda_u = 1/N_u$) & Ep 5 & 0{,}4983 & 0{,}8571 & 0{,}7451 & 0{,}8787 & 0{,}7506 \\
+\textbf{Retailrocket} & \& Trọng số bảo toàn thang đo) & \textbf{BIPN-Weighted (Đề xuất)} & \textbf{Ep 2} & \textbf{0{,}5198}$^{*}$ & \textbf{0{,}8590} & \textbf{0{,}7459} & \textbf{0{,}8805} & \textbf{0{,}7513} \\
+\textbf{Retailrocket} & & \textbf{BIPN-Learned (Đề xuất)} & \textbf{Ep 4} & \textbf{0{,}5198}$^{*}$ & \textbf{0{,}8599}$^{*}$ & \textbf{0{,}7462} & \textbf{0{,}8805} & \textbf{0{,}7514} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-Số liệu thực nghiệm tại Bảng~\ref{tab:result} cung cấp ba bằng chứng định lượng then chốt. Thứ nhất, trên tập Tmall, mô hình BIPN gốc đạt HR@10 là 0{,}1398 và NDCG@10 là 0{,}0736, tái lập sát kết quả công bố của Yan và cộng sự~\cite{yan2024bipn}, đồng thời vượt trội 9{,}9 lần so với mô hình LightGCN (0{,}0141 và 0{,}0070). Thứ hai, trên tập dữ liệu Retailrocket, BIPN tiếp tục đạt HR@10 là 0{,}1275 và NDCG@10 là 0{,}0901, trong khi LightGCN bị suy giảm nghiêm trọng khi chỉ đạt HR@10 là 0{,}0003 và NDCG@10 là 0{,}0001, tạo ra mức chênh lệch hiệu năng lên tới 425 lần. Thứ ba, biến thể có trọng số thể hiện sự phụ thuộc vào dạng phân bố: bám sát bản gốc trên Retailrocket (0{,}1229 so với 0{,}1275, chỉ giảm 3{,}6\%), nhưng bị suy giảm sâu trên Tmall (0{,}0071 so với 0{,}1398, giảm 94{,}9\%).
-
-Để kiểm tra tính đồng nhất của xu hướng hiệu năng trên các ngưỡng lọc Top-10 và Top-20 cũng như xem xét mối tương quan giữa tỷ lệ gợi ý trúng đích và thứ hạng ưu tiên của sản phẩm, ma trận trực quan đa chỉ số được thiết lập. Hình~\ref{fig:performance} so sánh trực quan hiệu năng của ba mô hình trên hai bộ dữ liệu thực nghiệm thông qua bốn chỉ số HR@10, NDCG@10, HR@20 và NDCG@20.
+Số liệu thực nghiệm tại Bảng~\ref{tab:result} cung cấp bốn luận cứ định lượng trọng tâm:
+\begin{enumerate}
+\item \textbf{Khả năng tái lập và ưu thế rõ rệt của kiến trúc đa hành vi so với đơn hành vi:} Trên tập dữ liệu chuẩn Tmall, bản tái lập mã nguồn gốc (\texttt{official-bipn}, sử dụng kiến trúc chuẩn hóa đồng bộ với quy tắc $\lambda_u = 1/N_u$) đạt Test HR@10 là 0{,}1398 tại độ kiên nhẫn dừng sớm 5 epoch (Ep 33) và đạt 0{,}1410 tại độ kiên nhẫn 10 epoch (\texttt{BIPN-Aligned}, Ep 47), khớp sát mức công bố 0{,}1414 của Yan và cộng sự~\cite{yan2024bipn}. Khi đặt cạnh mô hình đơn hành vi LightGCN ở cả hai cấu hình (Test HR@10 đạt 0{,}0141 và 0{,}0369 trên Tmall; 0{,}0003 và 0{,}0046 trên Retailrocket), kiến trúc đa hành vi đạt mức cải thiện gấp từ 4{,}0 đến 9{,}9 lần trên Tmall và từ 186 đến 425 lần trên Retailrocket.
+\item \textbf{Hạn chế của Hướng tiếp cận 1 (\texttt{BIPN-InvWeight} và \texttt{BIPN-InvLearned}):} Khi áp dụng trọng số chứa thừa số nghịch đảo tần suất $N_{\mathrm{all}}/n_b$ trên khung cơ sở chưa chuẩn hóa đơn vị xuyên tầng, hiệu năng kiểm tra trên Retailrocket suy giảm nhẹ so với bản cơ sở \texttt{BIPN-Base} (0{,}1229 so với 0{,}1275, giảm 3{,}6\%), nhưng trên tập Tmall lại sụt giảm nghiêm trọng xuống 0{,}0071 ở \texttt{BIPN-InvWeight} và 0{,}0089 ở \texttt{BIPN-InvLearned} (giảm 93{,}6\%--94{,}9\% so với bản tái lập chuẩn).
+\item \textbf{Hiệu quả cải tiến và ý nghĩa thống kê trên tập chuẩn Tmall ở Hướng tiếp cận 2:} Đặt trên cùng nền tảng chuẩn hóa xuyên tầng và kết nối dư với \texttt{official-bipn} ($\lambda_u = 1/N_u$, Test HR@10 = 0{,}1398) và \texttt{BIPN-Aligned} (Test HR@10 = 0{,}1410), việc tích hợp cơ chế điều hòa logarit tách pha $\lambda_u^{\mathrm{rank}} = [1 + \log_2(N_u + 1)]^{-1}$ cùng trọng số hành vi bảo toàn thang đo giúp hai biến thể đề xuất \texttt{BIPN-Weighted} và \texttt{BIPN-Learned} nâng Valid HR@10 lên \textbf{0{,}2397} và \textbf{0{,}2391}, đồng thời nâng Test HR@10 lên \textbf{0{,}1472} ($t = 3{,}39, p = 7{,}02 \times 10^{-4}$ so với \texttt{official-bipn}; $t = 2{,}80, p = 5{,}18 \times 10^{-3}$ so với \texttt{BIPN-Aligned}) và \textbf{0{,}1460} ($t = 2{,}83, p = 4{,}67 \times 10^{-3}$), NDCG@10 đạt \textbf{0{,}0771} và \textbf{0{,}0772} ($p < 0{,}01$), HR@20 đạt \textbf{0{,}2108} và \textbf{0{,}2075}, NDCG@20 đạt \textbf{0{,}0928} và \textbf{0{,}0923} ($p < 0{,}001$). Hơn nữa, khi bóc tách riêng tác động của công thức điều hòa logarit $\lambda_u^{\mathrm{rank}}$ so với quy tắc gốc $\lambda_u = 1/N_u$ ngay trên cùng bộ trọng số đã huấn luyện của \texttt{BIPN-Weighted}, cơ chế $\lambda_u^{\mathrm{rank}}$ giúp nâng Test HR@10 từ 0{,}1447 lên 0{,}1472 ($t = 3{,}74, p = 1{,}84 \times 10^{-4}$) và Test NDCG@10 từ 0{,}0754 lên 0{,}0771 ($t = 6{,}38, p = 1{,}78 \times 10^{-10}$), vượt qua mức tham chiếu của bài báo gốc SIGIR 2024 trên cả bốn độ đo.
+\item \textbf{Phân tích bóc tách đóng góp trên tập dữ liệu mới Retailrocket:} Kết quả trên Retailrocket cho phép tách bạch rõ vai trò của từng nhóm cải tiến. Trước hết, việc chuyển từ khung cơ sở chưa chuẩn hóa (\texttt{BIPN-Base}) sang khung chuẩn hóa L2 xuyên tầng và kết nối dư (\texttt{BIPN-Aligned}, vẫn giữ $\lambda_u = 1/N_u$) đóng vai trò nền tảng khi nâng Test HR@10 từ 0{,}1275 lên 0{,}8571 và Valid HR@10 từ 0{,}0814 lên 0{,}4983. Tiếp đó, trên cùng khung \texttt{BIPN-Aligned}, việc thay thế quy tắc $\lambda_u = 1/N_u$ bằng điều hòa logarit tách pha kết hợp trọng số hành vi tiếp tục nâng Valid HR@10 từ \textbf{0{,}4983} lên \textbf{0{,}5198} (+2{,}15\% tuyệt đối, $t = 2{,}98, p = 2{,}96 \times 10^{-3}$) và Valid NDCG@10 từ \textbf{0{,}3233} lên \textbf{0{,}3375} ($t = 3{,}53, p = 4{,}34 \times 10^{-4}$), đồng thời nâng Test HR@10 lên mức \textbf{0{,}8590} (\texttt{BIPN-Weighted}, $p = 0{,}0445$) và \textbf{0{,}8599} (\texttt{BIPN-Learned}, $t = 3{,}08, p = 2{,}09 \times 10^{-3}$). Sở dĩ biên độ cải thiện do $\lambda_u^{\mathrm{rank}}$ mang lại thể hiện rõ nét hơn trên tập Validation (+2{,}15\%) so với tập Test (+0{,}28\%) là do cấu trúc dữ liệu: theo quy trình chia tách thời gian tại Mục~\ref{sec:datasets}, 100\% người dùng trong tập Validation (gồm những người có từ 3 lần mua trở lên) đều có lịch sử mua huấn luyện $N_u \ge 1$ nên toàn bộ đều được kích hoạt công thức điều hòa logarit; ngược lại, trong tập Test có tới 68{,}4\% người dùng chỉ phát sinh duy nhất 1 giao dịch mua nằm ở tập Test (tức $N_u = 0$ trong tập huấn luyện, khiến $\lambda_u^{\mathrm{rank}} = 1$ trùng với công thức gốc), làm mức tăng trung bình trên toàn tập Test bị pha loãng bởi nhóm người dùng khởi đầu lạnh ($N_u = 0$).
+\end{enumerate}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig_performance_metrics_vi}
-\caption{So sánh hiệu năng thực nghiệm đa mốc đo (HR@10, NDCG@10, HR@20, NDCG@20) giữa các mô hình trên hai bộ dữ liệu Tmall và Retailrocket.}
+\caption{Đối chiếu hiệu năng thực nghiệm đa chỉ số (HR@10, NDCG@10, HR@20, NDCG@20) qua cả hai hướng tiếp cận trên hai bộ dữ liệu Tmall (a, b) và Retailrocket (c, d).}
 \label{fig:performance}
 \end{figure}
 
-Biểu đồ ma trận trên Hình~\ref{fig:performance} cho thấy tỷ số chất lượng xếp hạng $\frac{\text{NDCG@10}}{\text{HR@10}}$ của BIPN trên Retailrocket đạt mức 0{,}707 (vượt trội so với mức 0{,}526 trên Tmall). Hiện tượng này chứng minh các món hàng được gợi ý chính xác có xu hướng xuất hiện tại các vị trí đầu bảng danh sách (Top 1 đến Top 3), mang lại giá trị định hướng trải nghiệm người dùng tối ưu hơn.
+Hình~\ref{fig:performance} minh họa trực quan tương quan hiệu năng giữa hai hướng tiếp cận trên cả hai bộ dữ liệu. Trên Tmall (đồ thị con a và b), trong khi biến thể \texttt{BIPN-InvWeight} của Hướng tiếp cận 1 sụt giảm sâu, hai biến thể \texttt{BIPN-Weighted} và \texttt{BIPN-Learned} của Hướng tiếp cận 2 đều vượt qua đường chuẩn tham chiếu của bài báo gốc SIGIR 2024 trên cả bốn thước đo. Trên Retailrocket (đồ thị con c và d), tỷ số chất lượng xếp hạng $\text{NDCG@10}/\text{HR@10}$ đạt mức cao (0{,}707 ở Hướng tiếp cận 1 và tăng lên 0{,}868 ở Hướng tiếp cận 2), cho thấy các món hàng mục tiêu được xếp ở nhóm vị trí dẫn đầu danh sách gợi ý.
 
 \subsection{Thảo luận Chuyên sâu và Các Luận cứ Khoa học}
 \label{sec:discussion}
 
-Khoảng cách chênh lệch hiệu năng lên tới 425 lần giữa mô hình đa hành vi và mô hình đơn hành vi trên tập Retailrocket đặt ra yêu cầu phải lý giải bản chất từ cấu trúc topo của đồ thị tương tác. Do thuật toán tích chập đồ thị phụ thuộc vào sự liên thông giữa các đỉnh lân cận để lan truyền biểu diễn, việc khảo sát phân bố bậc đỉnh và kích thước thành phần liên thông lớn nhất là cần thiết. Hình~\ref{fig:connectivity} mô tả phân bố bậc đỉnh trên thang Log-Log và tỷ lệ bao phủ của thành phần liên thông khổng lồ trên hai bộ dữ liệu.
+\paragraph{1. Cơ chế chuyển pha thẩm thấu đồ thị và vai trò của hành vi phụ trợ.}
+Khoảng cách chênh lệch hiệu năng hàng trăm lần giữa mô hình đa hành vi và mô hình đơn hành vi trên tập Retailrocket được lý giải trực tiếp từ cấu trúc topo của đồ thị tương tác. Hình~\ref{fig:connectivity} mô tả phân bố bậc đỉnh trên thang Log-Log và tỷ lệ bao phủ của thành phần liên thông khổng lồ (Giant Connected Component -- GCC) trên hai bộ dữ liệu.
 
 \begin{figure}[H]
 \centering
@@ -235,47 +293,42 @@ Khoảng cách chênh lệch hiệu năng lên tới 425 lần giữa mô hình 
 \label{fig:connectivity}
 \end{figure}
 
-Đặc trưng topo trên Hình~\ref{fig:connectivity} phản ánh cơ chế dẫn tới sự tê liệt của LightGCN trên tập dữ liệu Retailrocket. Trong lý thuyết đồ thị ngẫu nhiên, sự khuếch tán thông tin trong mạng nơ-ron tích chập đòi hỏi sự hiện diện của một thành phần liên thông khổng lồ (Giant Connected Component - GCC) bao trùm phần lớn các đỉnh. Trên tập Retailrocket, đồ thị đơn hành vi mua hàng có tới 74{,}2\% số đỉnh cô lập với bậc $k \le 1$, và kích thước GCC chỉ đạt 25{,}8\%. Tình trạng này khiến ma trận kề bị đứt gãy liên kết, triệt tiêu dòng lan truyền embedding qua các tầng GCN. Trái lại, việc BIPN tích hợp hơn 110.000 tương tác phụ đã kích hoạt quá trình chuyển pha thẩm thấu đồ thị, nâng kích thước GCC lên 99{,}4\% trên Retailrocket và 99{,}8\% trên Tmall, tái lập cấu trúc mạng không tỷ lệ với phân bố bậc tuân theo định luật lũy thừa $P(k) \propto k^{-\gamma}$ trên thang Log-Log.
-
-Nhằm xác định ngưỡng giới hạn của các mô hình gợi ý khi độ thưa thớt dữ liệu mục tiêu gia tăng, việc đo lường tỷ lệ bảo toàn hiệu năng giữa hai miền dữ liệu là bước kiểm chứng quan trọng. Hình~\ref{fig:sparsity} thể hiện mối tương quan giữa mật độ tương tác mua trung bình và tỷ lệ bảo toàn hiệu năng của BIPN so với LightGCN.
+Trên tập Retailrocket, đồ thị đơn hành vi mua hàng có tới 74{,}2\% số đỉnh cô lập với bậc $k \le 1$, và kích thước GCC chỉ đạt 25{,}8\%. Tình trạng phân mảnh này khiến ma trận kề bị đứt gãy liên kết, làm suy yếu dòng lan truyền thông điệp qua các tầng GCN (dẫn tới Test HR@10 chỉ đạt 0{,}0003 ở \texttt{LightGCN-Base} và 0{,}0046 ở \texttt{LightGCN-Aligned}). Trái lại, việc BIPN tích hợp hơn 110.000 tương tác phụ trợ đã kích hoạt quá trình chuyển pha thẩm thấu đồ thị (graph percolation), nâng kích thước GCC lên 99{,}4\% trên Retailrocket và 99{,}8\% trên Tmall, tái lập cấu trúc mạng không tỷ lệ tuân theo định luật lũy thừa $P(k) \propto k^{-\gamma}$. Nhờ đó, như thể hiện trên Hình~\ref{fig:sparsity}, khi mật độ tương tác mua trung bình giảm từ 4{,}75 lượt/người (Tmall) xuống 0{,}74 lượt/người (Retailrocket), kiến trúc đa hành vi vẫn duy trì độ bền vững trước hiện tượng thưa thớt dữ liệu.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig_sparsity_robustness_vi}
-\caption{Mật độ tương tác mua và Tỷ lệ bảo toàn hiệu năng của BIPN so với LightGCN khi chuyển giao sang miền dữ liệu cực kỳ thưa thớt Retailrocket.}
+\caption{Mật độ tương tác mua và Tỷ lệ bảo toàn hiệu năng của kiến trúc đa hành vi BIPN so với LightGCN khi chuyển giao sang miền dữ liệu thưa thớt Retailrocket.}
 \label{fig:sparsity}
 \end{figure}
 
-Dữ liệu tại Hình~\ref{fig:sparsity} minh chứng cho tính bền vững của kiến trúc đa hành vi trước độ thưa thớt dữ liệu. Khi mật độ tương tác mua trung bình giảm mạnh từ 4{,}75 lượt/người (Tmall) xuống còn 0{,}74 lượt/người (Retailrocket, độ thưa 99{,}98\%), hiệu năng HR@10 của LightGCN sụt giảm 97{,}9\% (từ 0{,}0141 xuống 0{,}0003). Trong khi đó, BIPN bảo toàn được 91{,}2\% hiệu năng thực nghiệm (từ 0{,}1398 chỉ giảm về 0{,}1275) nhờ dòng chuyển giao tri thức liên tục từ các hành vi xem và giỏ hàng.
-
-Để bóc tách mức độ đóng góp giữa cơ chế mạng nơ-ron điều hướng ý định và phương pháp can thiệp trọng số tĩnh, nghiên cứu tiến hành lượng hóa hệ số gia tăng tri thức cùng mức biến động hiệu năng của biến thể Weighted BCE. Hình~\ref{fig:gain_ablation} trình bày kết quả phân tích bóc tách trên cả hai bộ dữ liệu thực nghiệm.
+\paragraph{2. Giải phẫu nguyên nhân suy thoái của Hướng tiếp cận 1 và cơ chế phục hồi không gian pha ở Hướng tiếp cận 2.}
+Nhằm lý giải vì sao biến thể \texttt{BIPN-InvWeight} trong Hướng tiếp cận 1 duy trì được hiệu năng trên Retailrocket nhưng lại suy giảm mạnh trên Tmall (Hình~\ref{fig:gain_ablation}), lý thuyết học biểu diễn tương phản trên siêu cầu đơn vị của Wang và Isola~\cite{wang2020alignment} được áp dụng thông qua hai đại lượng là mất mát thẳng hàng $\mathcal{L}_{\mathrm{align}} = \mathbb{E}_{(u,i) \sim p_{\mathrm{pos}}}\big[\lVert \tilde{\mathbf{e}}_u - \tilde{\mathbf{e}}_i \rVert_2^2\big]$ và mất mát đồng đều $\mathcal{L}_{\mathrm{uniform}} = \log \mathbb{E}_{u, u' \sim p_{\mathrm{data}}}\big[\exp(-2\lVert \tilde{\mathbf{e}}_u - \tilde{\mathbf{e}}_{u'} \rVert_2^2)\big]$. Một không gian nhúng tối ưu phải đồng thời đạt giá trị $\mathcal{L}_{\mathrm{align}}$ thấp (kéo gần các cặp tương tác dương) và duy trì $\mathcal{L}_{\mathrm{uniform}}$ ở mức âm lớn (phân tán đẳng hướng nhằm bảo toàn entropy thông tin). Hình~\ref{fig:alignment} xác định vị trí của các mô hình trong không gian pha hai chiều đo lường hai đại lượng đối ngẫu này.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig_relative_gain_ablation_vi}
-\caption{Hệ số gia tăng tri thức đa hành vi (trên) và Phân tích bóc tách biến thể Weighted BCE (dưới) trên hai bộ dữ liệu.}
+\caption{Hệ số gia tăng tri thức đa hành vi (a) và Phân tích bóc tách đối xứng giữa Hướng tiếp cận 1 (suy giảm âm) và Hướng tiếp cận 2 (tăng trưởng dương) so với mô hình BIPN chuẩn (b).}
 \label{fig:gain_ablation}
 \end{figure}
-
-Kết quả phân tích bóc tách tại Hình~\ref{fig:gain_ablation} xác nhận hệ số vượt trội của BIPN so với LightGCN tăng từ 9{,}9 lần trên Tmall lên tới 425 lần trên Retailrocket, phản ánh quy luật giá trị thặng dư tri thức tăng vọt khi dữ liệu mục tiêu cạn kiệt. Mặt khác, phân tích biến thể có trọng số cho thấy sự phụ thuộc chặt chẽ vào độ cân bằng của phễu tương tác: trên Retailrocket với tỷ lệ xem so với giỏ hàng đạt 3{,}89:1, biến thể có trọng số đạt HR@10 là 0{,}1229 (chỉ giảm 3{,}6\% so với mức 0{,}1275 của bản gốc); tuy nhiên trên Tmall với tỷ lệ chênh lệch lên tới 908:1, biến thể có trọng số lại giảm mạnh xuống mức 0{,}0071 (suy giảm 94{,}9\%).
-
-Hiện tượng biến thể có trọng số hoạt động ổn định trên Retailrocket nhưng lại suy giảm mạnh trên Tmall đòi hỏi một công cụ phân tích hình học trong không gian embedding để truy nguyên bản chất cơ chế tối ưu hóa. Dựa trên lý thuyết của Wang và Isola~\cite{wang2020alignment}, không gian biểu diễn chất lượng cao phải bảo đảm sự cân bằng giữa tính thẳng hàng và tính đồng đều trên siêu cầu đơn vị. Hình~\ref{fig:alignment} xác định vị trí của các mô hình trong không gian pha hai chiều đo lường hai đại lượng đối ngẫu này.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_adv3_alignment_uniformity_vi}
-\caption{Không gian pha hình học biểu diễn đo lường Tính Thẳng hàng (Alignment) và Tính Đồng đều (Uniformity) theo lý thuyết Wang \& Isola (ICML 2020).}
+\caption{Không gian pha hình học biểu diễn đo lường Tính Thẳng hàng (Alignment) và Tính Đồng đều (Uniformity) theo lý thuyết Wang \& Isola (ICML 2020), thể hiện quỹ đạo suy thoái ở Hướng tiếp cận 1 và quỹ đạo tái cấu trúc ở Hướng tiếp cận 2.}
 \label{fig:alignment}
 \end{figure}
 
-Lý thuyết học biểu diễn tương phản trên siêu cầu đơn vị~\cite{wang2020alignment} xác định rằng một không gian embedding tối ưu phải đồng thời giảm thiểu mất mát thẳng hàng $\mathcal{L}_{\mathrm{align}}$ (kéo gần các cặp tương tác dương) và duy trì mất mát đồng đều $\mathcal{L}_{\mathrm{uniform}}$ ở mức âm lớn (phân tán đẳng hướng nhằm tối đa hóa entropy thông tin). Tọa độ không gian pha trên Hình~\ref{fig:alignment} cho thấy mô hình BIPN gốc trên cả Tmall $(0{,}38, -2{,}85)$ và Retailrocket $(0{,}46, -2{,}60)$ đều nằm trong vùng hội tụ lý tưởng. Ngược lại, điểm biểu diễn của biến thể Weighted BCE trên Tmall bị dịch chuyển sang vùng sụp đổ biểu diễn với tọa độ $(1{,}42, -0{,}75)$. Hiện tượng này bắt nguồn từ việc gán trọng số tĩnh $\alpha=2$ lên tập mẫu giỏ hàng quá nhỏ (1.996 dòng) giữa 1.813.498 dòng xem lướt, khiến gradient cục bộ bị phóng đại trong quá trình lan truyền ngược, ép các vector embedding co cụm về một vùng hẹp trên siêu cầu. Sự suy thoái tính đồng đều này làm mất tính đẳng hướng của không gian biểu diễn, làm suy giảm năng lực phân biệt sở thích của người dùng. Do đó, cơ chế điều hướng ý định thích nghi động bằng mạng nơ-ron của BIPN gốc mang lại tính ổn định cao hơn đáng kể so với việc can thiệp trọng số tĩnh thủ công.
+Tọa độ không gian pha $(\mathcal{L}_{\mathrm{align}}, \mathcal{L}_{\mathrm{uniform}})$ trên Hình~\ref{fig:alignment} cho thấy mô hình BIPN chuẩn trên cả Tmall $(0{,}38, -2{,}85)$ và Retailrocket $(0{,}46, -2{,}60)$ đều nằm trong vùng hội tụ tốt. Ngược lại, điểm biểu diễn của biến thể \texttt{BIPN-InvWeight} (Hướng tiếp cận 1) trên Tmall bị dịch chuyển theo quỹ đạo suy thoái sang vùng sụp đổ biểu diễn (representation collapse) với tọa độ $(1{,}42, -0{,}75)$. Hiện tượng này bắt nguồn từ việc chia cho tần suất $n_b$ trong công thức~(\ref{eq:weight_norm}) trên tập mẫu giỏ hàng quá nhỏ (1.996 lượt giữa 1.813.498 lượt xem lướt, tỷ lệ 1:908), khiến trọng số $w_{\mathrm{cart}}^{\mathrm{inv}}$ bị nhân lên $370{,}5$ lần; kết hợp với việc thiếu chuẩn hóa L2 từng tầng GCN, các xung đạo hàm lớn ép các vector nhúng co cụm về một vùng hẹp trên siêu cầu và làm suy giảm tính đẳng hướng.
+
+Trong Hướng tiếp cận 2, việc thay thế trọng số nghịch đảo tần suất bằng chuẩn hóa bảo toàn trung bình~(\ref{eq:w_norm2}) và hàm điều biến chặn $\tanh$~(\ref{eq:w_learned}) giữ cho mọi trọng số hành vi nằm trong miền ổn định $w_b \in [0{,}97, 1{,}05]$, kết hợp cùng chuẩn hóa đơn vị xuyên tầng~(\ref{eq:gcn_aligned}) đã tạo ra quỹ đạo tái cấu trúc đưa các mô hình \texttt{BIPN-Weighted} $(0{,}33, -2{,}97)$ và \texttt{BIPN-Learned} $(0{,}35, -2{,}92)$ tiến sâu hơn vào vùng hội tụ mong muốn. Bên cạnh đó, việc tách biệt $\lambda_u^{\mathrm{train}} = 1/N_u$ và $\lambda_u^{\mathrm{rank}} = [1 + \log_2(N_u + 1)]^{-1}$ giải quyết bài toán phân bổ trọng số cho nhóm người dùng có ít giao dịch ($N_u = 1$) mà không gây rò rỉ tự tương quan trong quá trình tối ưu hóa BPR, qua đó lý giải sự cải thiện hiệu năng có ý nghĩa thống kê trên cả Tmall (Test HR@10 đạt 0{,}1472, $p < 0{,}001$) và Retailrocket (Valid HR@10 tăng từ 0{,}4983 lên 0{,}5198, $p < 0{,}01$; Test HR@10 đạt 0{,}8599, $p < 0{,}01$).
 
 \section{Kết luận và Hướng Phát triển}
 \label{sec:conclusion}
 
-Nghiên cứu này đã hoàn thành việc đánh giá thực nghiệm toàn diện và phân tích chuyên sâu về mô hình gợi ý đa hành vi BIPN trên hai tập dữ liệu quy mô lớn Tmall và Retailrocket cùng mô hình đối chứng LightGCN. Kết quả thực nghiệm rút ra hai kết luận khoa học có giá trị thực tiễn: thứ nhất, việc tích hợp dữ liệu đa hành vi giải quyết hiệu quả tình trạng đứt gãy topo trên các đồ thị thưa thớt, giúp duy trì 91{,}2\% hiệu năng thực nghiệm và tạo ra mức vượt trội 425 lần so với mô hình đơn hành vi; thứ hai, cơ chế điều hướng ý định bằng mạng nơ-ron động đạt độ bền vững cao hơn các phương pháp gán trọng số tĩnh khi phân phối dữ liệu bị mất cân bằng cực đoan.
+Nghiên cứu này đã thực hiện đánh giá thực nghiệm độc lập, kiểm chứng năng lực khái quát hóa liên nền tảng và phân tích đối sánh hai hướng tiếp cận cải tiến cho mô hình gợi ý đa hành vi BIPN trên hai tập dữ liệu Tmall và Retailrocket cùng mô hình đối chứng LightGCN. Kết quả nghiên cứu rút ra ba kết luận khoa học trọng tâm: (1) tích hợp dữ liệu đa hành vi thông qua đồ thị toàn cục giúp khôi phục thành phần liên thông khổng lồ trên các ma trận tương tác thưa thớt, mang lại mức cải thiện hiệu năng rõ rệt so với mô hình đơn hành vi; (2) phương pháp gán trọng số nghịch đảo tần suất tĩnh trên khung chưa chuẩn hóa dễ dẫn tới hiện tượng phóng đại đạo hàm cục bộ và sụp đổ biểu diễn khi phân bố phễu hành vi mất cân bằng cực đoan; và (3) trên nền tảng chuẩn hóa đơn vị xuyên tầng, cơ chế điều hòa ý định logarit tách pha giữa huấn luyện và suy luận kết hợp trọng số hành vi bảo toàn thang đo hoặc học tự thích nghi có miền chặn khắc phục hiệu quả hạn chế trên, nâng cao độ chính xác xếp hạng với mức ý nghĩa thống kê cao ($p < 0{,}01$) và vượt mức tham chiếu của công bố gốc SIGIR 2024 trên các thước đo đánh giá.
 
-Trong các giai đoạn nghiên cứu tiếp theo, hai định hướng phát triển trọng tâm được xác lập: phát triển cơ chế chú ý tự động điều chỉnh trọng số hành vi dựa trên entropy thông tin nhằm loại bỏ hoàn toàn việc gán trọng số tĩnh; và tích hợp cấu trúc đa hành vi vào các mô hình chuỗi thời gian nhằm nắm bắt sự dịch chuyển sở thích của người tiêu dùng trong thời gian thực.
+Trong các giai đoạn nghiên cứu tiếp theo, việc mở rộng cơ chế điều hòa ý định tách pha sang các kiến trúc đồ thị siêu liên kết phụ thuộc thời gian và tích hợp thông tin ngữ nghĩa đa phương thức của sản phẩm là những hướng phát triển tiềm năng nhằm nâng cao hơn nữa chất lượng cá nhân hóa trong thực tiễn.
 
 \begin{credits}
 \subsubsection*{\discintname}

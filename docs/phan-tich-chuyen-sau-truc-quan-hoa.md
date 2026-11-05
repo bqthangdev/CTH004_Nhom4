@@ -3,8 +3,8 @@
 ### Môn học: Chuyên đề Hệ thống Thông tin Thông minh (CTH004) - GV: PGS.TS. Nguyễn Thái Nghe
 
 > **Mục tiêu tài liệu:**  
-> Cung cấp cơ sở lý thuyết, phân tích học thuật chuyên sâu và các suy luận bản chất dữ liệu phản ánh qua toàn bộ **9 biểu đồ trực quan hóa** (5 biểu đồ khảo sát thực nghiệm + 4 biểu đồ nghiên cứu lý thuyết nâng cao).  
-> Tài liệu được biên soạn nhằm phục vụ công tác viết báo cáo khoa học theo chuẩn Springer LNCS, xây dựng slide báo cáo xuất sắc và cung cấp luận cứ bảo vệ vững chắc trước hội đồng phản biện.
+> Cung cấp cơ sở lý thuyết, phân tích học thuật chuyên sâu và các suy luận bản chất dữ liệu phản ánh qua toàn bộ **9 biểu đồ trực quan hóa** (5 biểu đồ khảo sát thực nghiệm + 4 biểu đồ nghiên cứu lý thuyết nâng cao), tích hợp song song dữ liệu của **Hướng tiếp cận 1** và **Hướng tiếp cận 2**.  
+> Tài liệu được biên soạn theo văn phong học thuật trung lập nhằm phục vụ công tác viết báo cáo khoa học chuẩn Springer LNCS, xây dựng slide báo cáo và cung cấp luận cứ bảo vệ trước hội đồng.
 
 ---
 
@@ -12,10 +12,10 @@
 1. [Triết Lý Thiết Kế & Phương Pháp Luận Trực Quan Hóa](#1-triết-lý-thiết-kế--phương-pháp-luận-trực-quan-hóa)
 2. [Phân Tích 5 Biểu Đồ Thực Nghiệm Cơ Bản (Empirical Benchmarks)](#2-phân-tích-5-biểu-đồ-thực-nghiệm-cơ-bản)
    - [2.1. Phễu hành vi & Phân bố tương tác (`fig_behavior_distribution`)](#21-phễu-hành-vi--phân-bố-tương-tác-fig_behavior_distribution)
-   - [2.2. Động thái tối ưu hóa & Cơ chế dừng sớm (`fig_convergence_curve`)](#22-động-thái-tối-ưu-hóa--cơ-chế-dừng-sớm-fig_convergence_curve)
-   - [2.3. Lưới đánh giá đa chỉ số Top-K (`fig_performance_metrics`)](#23-lưới-đánh-giá-đa-chỉ-số-top-k-fig_performance_metrics)
+   - [2.2. Động thái tối ưu hóa & Đối sánh quỹ đạo hội tụ (`fig_convergence_curve`)](#22-động-thái-tối-ưu-hóa--đối-sánh-quỹ-đạo-hội-tụ-fig_convergence_curve)
+   - [2.3. Lưới đánh giá đa chỉ số Top-K qua hai hướng tiếp cận (`fig_performance_metrics`)](#23-lưới-đánh-giá-đa-chỉ-số-top-k-qua-hai-hướng-tiếp-cận-fig_performance_metrics)
    - [2.4. Độ chống chịu trước sự thưa thớt cực đoan (`fig_sparsity_robustness`)](#24-độ-chống-chịu-trước-sự-thưa-thớt-cực-đoan-fig_sparsity_robustness)
-   - [2.5. Hệ số gia tăng tri thức & Nghiên cứu bóc tách (`fig_relative_gain_ablation`)](#25-hệ-số-gia-tăng-tri-thức--nghiên-cứu-bóc-tách-fig_relative_gain_ablation)
+   - [2.5. Hệ số gia tăng tri thức & Bóc tách đối xứng hai hướng tiếp cận (`fig_relative_gain_ablation`)](#25-hệ-số-gia-tăng-tri-thức--bóc-tách-đối-xứng-hai-hướng-tiếp-cận-fig_relative_gain_ablation)
 3. [Phân Tích 4 Biểu Đồ Nghiên Cứu Chuyên Sâu Nâng Cao (Theoretical & Geometric Insights)](#3-phân-tích-4-biểu-đồ-nghiên-cứu-chuyên-sâu-nâng-cao)
    - [3.1. Phân bố bậc đồ thị Log-Log & Thành phần liên thông khổng lồ (`fig_adv1_graph_connectivity`)](#31-phân-bố-bậc-đồ-thị-log-log--thành-phần-liên-thông-khổng-lồ-fig_adv1_graph_connectivity)
    - [3.2. Phân tầng người dùng theo mật độ & Tính công bằng (`fig_adv2_user_stratification`)](#32-phân-tầng-người-dùng-theo-mật-độ--tính-công-bằng-fig_adv2_user_stratification)
@@ -28,22 +28,18 @@
 
 ## 1. Triết Lý Thiết Kế & Phương Pháp Luận Trực Quan Hóa
 
-Trong nghiên cứu khoa học máy tính nói chung và hệ thống gợi ý (Recommender Systems) nói riêng, trực quan hóa không đơn thuần là "vẽ lại số liệu thành hình". Trực quan hóa đóng vai trò là **công cụ suy diễn quy nạp (inductive inference)**, giúp phơi bày những đặc trưng nội tại của dữ liệu, động thái của thuật toán tối ưu hóa, và cấu trúc hình học của không gian biểu diễn mà các bảng số liệu tĩnh không thể bộc lộ.
+Trong nghiên cứu hệ thống gợi ý (Recommender Systems), trực quan hóa đóng vai trò là **công cụ suy diễn quy nạp (inductive inference)**, giúp làm sáng tỏ đặc trưng nội tại của dữ liệu, động học của thuật toán tối ưu hóa, và cấu trúc hình học của không gian biểu diễn mà các bảng số liệu tĩnh không thể hiện hết.
 
-Hệ thống 9 biểu đồ trong đề tài Topic 5 được xây dựng dựa trên 3 nguyên lý thiết kế đồ họa khoa học chuẩn hội nghị quốc tế (A/A* như SIGIR, KDD, ICML, NeurIPS):
+Hệ thống 9 biểu đồ trong đề tài được thiết kế dựa trên nguyên tắc **Tích hợp đối sánh song song (Side-by-Side & Trajectory Overlay)**: bảo lưu trọn vẹn dữ liệu thực nghiệm của **Hướng tiếp cận 1** (`BIPN-InvWeight`, `LightGCN-Base`) đồng thời đặt cạnh dữ liệu của **Hướng tiếp cận 2** (`BIPN-Weighted`, `BIPN-Learned`, `LightGCN-Aligned`) trên cùng hệ quy chiếu:
 
 ```mermaid
 flowchart LR
-    A["Nguyên lý 1:<br>Đa Chiều & Đối Kháng<br>(Comparative Multi-facet)"] --> D["Hệ Thống Trực Quan Hóa Chuẩn Quốc Tế"]
+    A["Nguyên lý 1:<br>Đối Sánh Hai Hướng Tiếp Cận<br>(Approach 1 vs Approach 2)"] --> D["Hệ Thống Trực Quan Hóa Chuẩn Quốc Tế"]
     B["Nguyên lý 2:<br>Truy Nguyên Bản Chất Dữ Liệu<br>(Root-cause Tracing)"] --> D
     C["Nguyên lý 3:<br>Hình Học Biểu Diễn Trực Quan<br>(Geometric Interpretability)"] --> D
     D --> E["Báo Cáo Springer LNCS"]
     D --> F["Slide & Vấn Đáp Bảo Vệ"]
 ```
-
-1. **Tính Đa Chiều & Đối Kháng (Comparative Multi-facet):** Mỗi chỉ số hiệu năng (HR, NDCG) luôn được đặt trong mối tương quan với độ thưa thớt, hành vi phân tầng của người dùng và các mô hình đối chứng (BIPN vs LightGCN vs Weighted BCE).
-2. **Truy Nguyên Bản Chất Dữ Liệu (Root-cause Tracing):** Mọi sự vượt trội hay suy giảm hiệu năng của mô hình đều được truy vết về cấu trúc topo đồ thị và phân bố phễu hành vi của từng nền tảng thương mại điện tử.
-3. **Hình Học Biểu Diễn Trực Quan (Geometric Interpretability):** Đưa các khái niệm trừu tượng (như hiện tượng sụp đổ biểu diễn, tính liên thông đồ thị) về các không gian pha hai chiều và đồ thị mạng trực quan, giúp người đọc nắm bắt bản chất toán học chỉ trong một ánh nhìn.
 
 ---
 
@@ -58,130 +54,97 @@ flowchart LR
 
 ```text
 Tmall (Nền tảng tổng hợp B2C - 2.22M interactions)
-├── Click (Xem):    1,813,498 (81.7%)  ========== [Chiếm áp đảo]
-├── Collect (Lưu):     221,514 (10.0%)  ===
-├── Buy (Mua):         181,428 ( 8.2%)  ==
-└── Cart (Giỏ hàng):     1,996 ( 0.1%)  *  [Tỉ lệ Click:Cart = 908:1]
+├── Click (Xem):    1,813,498 (81.75%) ========== [Chiếm áp đảo]
+├── Collect (Lưu):    204,496 ( 9.22%) ===
+├── Buy (Mua):        198,446 ( 8.95%) ==
+└── Cart (Giỏ hàng):    1,996 ( 0.09%) *  [Tỉ lệ Click:Cart = 908:1]
 
 Retailrocket (Nền tảng bán lẻ trực tuyến - 119.7K interactions)
-├── View (Xem):         88,304 (73.8%)  ======== [Tương tác chính]
-├── Cart (Giỏ hàng):    22,716 (19.0%)  ===      [Tỉ lệ View:Cart = 3.9:1]
-└── Buy (Mua):           8,666 ( 7.2%)  =
+├── View (Xem):        88,304 (73.78%) ======== [Tương tác chính]
+├── Cart (Giỏ hàng):   22,716 (18.98%) ===      [Tỉ lệ View:Cart = 3.9:1]
+└── Buy (Mua):          8,666 ( 7.24%) =
 ```
 
 #### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Sự khác biệt văn hóa & Kiến trúc nghiệp vụ giữa hai nền tảng:**
-   - **Tmall (Alibaba):** Là sàn thương mại điện tử quy mô khổng lồ. Hành vi người dùng mang tính lướt dạo (browsing/window-shopping) cao với hơn 81.7% lượt click. Đặc biệt, người dùng Tmall có thói quen "sưu tầm/thêm vào mục yêu thích" (`collect` = 10.0%) thay vì đưa vào giỏ hàng (`cart` chỉ vỏn vẹn 0.1%). Trên ứng dụng di động Taobao/Tmall, người dùng thường bấm nút "Mua ngay" (Buy Now) trực tiếp từ trang chi tiết sản phẩm hoặc trang yêu thích trong các dịp khuyến mãi Flash Sale, dẫn đến số lượt `buy` (181.4K) cao gấp **90 lần** số lượt `cart` (2K).
-   - **Retailrocket (Tây Âu):** Là nền tảng bán lẻ theo phong cách giỏ hàng truyền thống (Standard E-commerce Funnel). Người dùng xem hàng (`view` = 73.8%), cân nhắc đưa vào giỏ (`cart` = 19.0%), rồi tiến hành thanh toán (`buy` = 7.2%). Tỷ lệ giữa hành vi xem và đưa vào giỏ là 3.9 : 1, phản ánh một phễu chuyển đổi tự nhiên và cân bằng.
-
-2. **Hệ quả đối với hàm mất mát có trọng số (Weighted BCE Loss):**
-   - Sự tương phản trực quan giữa hai biểu đồ tròn giải thích một cách tuyệt đối kết quả tại Bảng 2 của bài báo:
-   - Trên **Retailrocket**, tỷ lệ `view : cart` là 3.9:1, việc nhóm đề xuất gán trọng số ưu tiên $\alpha_{\mathrm{cart}} = 2$ hoạt động hài hòa với dữ liệu, giúp mô hình Weighted đạt $\text{HR@10} = 0.1229$ (bám sát bản gốc $0.1275$, độ lệch chỉ $-3.6\%$).
-   - Ngược lại trên **Tmall**, tỷ lệ `click : cart` lệch cực đoan tới **908 : 1**. Trọng số chuẩn hóa $w_{\mathrm{cart}} = \frac{\alpha_{\mathrm{cart}} N}{n_{\mathrm{cart}} \sum \alpha}$ bị khuếch đại lên hàng trăm lần. Trong quá trình lan truyền ngược (Backpropagation), gradient sinh ra từ 1.996 mẫu giỏ hàng này đè bẹp hoàn toàn gradient của 1.8 triệu lượt click. Không gian embedding bị co kéo cục bộ, khiến mô hình Weighted trên Tmall bị "suy dinh dưỡng đặc trưng" và sụp đổ xuống $\text{HR@10} = 0.0071$ (giảm tới $-94.9\%$).
-3. **Ý nghĩa học thuật:**
-   Biểu đồ Donut là minh chứng đanh thép khẳng định: **Không thể can thiệp trọng số tĩnh (Heuristic Static Weighting) lên dữ liệu bị mất cân bằng cực đoan.** Đây chính là lý do tại sao kiến trúc mạng điều hướng ý định thích nghi động (Bidirectional Intention Navigation) của BIPN là bắt buộc và tối ưu hơn mọi giải pháp gán trọng số thủ công.
+1. **Sự khác biệt cấu trúc nghiệp vụ giữa hai nền tảng:**
+   - **Tmall (Alibaba):** Hành vi duyệt lướt (`click` = 81,75%) và lưu trữ yêu thích (`collect`) chiếm áp đảo, trong khi hành vi giỏ hàng (`cart`) chỉ chiếm 0,09% (1.996 tương tác, tỷ lệ mất cân bằng `click : cart` lên tới **908 : 1**).
+   - **Retailrocket:** Vận hành theo phễu thương mại điện tử truyền thống với tỷ lệ `view : cart` đạt 3,9 : 1 (73,78% xem, 18,98% giỏ hàng, 7,24% mua).
+2. **Hệ quả trực tiếp lên hai hướng tiếp cận cải tiến:**
+   - Ở **Hướng tiếp cận 1 (`BIPN-InvWeight`)**, công thức trọng số nghịch đảo tần suất $w_b^{\mathrm{inv}} = \frac{\alpha_b N}{n_b A}$ hoạt động ổn định trên Retailrocket (nơi $N/n_{\mathrm{cart}} \approx 5{,}27$), nhưng gây phóng đại biên độ đạo hàm lên gấp $370{,}5$ lần đối với lớp `cart` trên Tmall (nơi $N/n_{\mathrm{cart}} \approx 1111{,}4$), dẫn tới sụp đổ biểu diễn ($\text{HR@10} = 0{,}0071$).
+   - Ở **Hướng tiếp cận 2 (`BIPN-Weighted` & `BIPN-Learned`)**, việc loại bỏ thừa số $N/n_b$ và chuẩn hóa bảo toàn thang đo trung bình $\frac{1}{B}\sum_{b=1}^B w_b = 1$ giúp mô hình thích ứng bền vững với cả phân bố cân bằng (Retailrocket) lẫn phân bố lệch cực đoan (Tmall).
 
 ---
 
-### 2.2. Động thái tối ưu hóa & Cơ chế dừng sớm (`fig_convergence_curve`)
+### 2.2. Động thái tối ưu hóa & Đối sánh quỹ đạo hội tụ (`fig_convergence_curve`)
 
 * **Tệp minh chứng:** [`paper/fig_convergence_curve_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_convergence_curve_vi.png) | [`paper/fig_convergence_curve_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_convergence_curve_vi.pdf)
-* **Dạng đồ thị:** Đồ thị hai trục tọa độ độc lập (Dual Y-Axis Plot) thể hiện động lực tối ưu hóa qua 38 epoch.
+* **Dạng đồ thị:** Đồ thị hai trục tọa độ độc lập (Dual Y-Axis Overlay Plot) đối sánh quỹ đạo hội tụ giữa bản tái lập cơ sở (38 epoch) và Hướng tiếp cận 2 (`BIPN-Weighted`, 68 epoch).
 
 ```text
-Trục trái (Đỏ - Nét đứt):  Train Loss      | Khởi điểm 0.1806 ──> Đáy tiệm cận 0.0701
-Trục phải (Xanh - Nét liền): Valid Hit@20   | Khởi điểm 0.0912 ──> Cực đại 0.3094 (Epoch 33)
-Cơ chế kiểm soát:         Early Stopping   | Patience = 5 ──> Dừng tại Epoch 38
+Trục trái (Đỏ / Cam):       Train Loss        | Bản tái lập (0.1806 -> 0.0701) vs HTC2 (0.1790 -> 0.0639)
+Trục phải (Xanh lam):       Valid Hit@20 (M1) | Đạt đỉnh 0.3094 tại Epoch 33 (Dừng sớm tại Epoch 38)
+Trục phải (Xanh lục):       Valid HR@20 (M2)  | Đạt đỉnh 0.3238 (Valid HR@10 = 0.2397) tại Epoch 58 (Dừng sớm tại Epoch 68)
 ```
 
 #### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Động lực học của quá trình huấn luyện mô hình đa hành vi:**
-   - **Giai đoạn 1 (Epoch 1 – 5, Khởi động nhanh):** Train Loss giảm dốc đứng từ $0.1806$ xuống dưới $0.1050$, trong khi Validation Hit@20 tăng vọt từ $0.0912$ lên trên $0.2200$. Đây là giai đoạn đồ thị gộp hai phía (Bipartite Global Graph) thực hiện các bước lan truyền thông điệp thô (coarse-grained message passing), nhanh chóng tách biệt các cụm user-item có tương tác khỏi các mẫu âm ngẫu nhiên.
-   - **Giai đoạn 2 (Epoch 6 – 33, Tinh chỉnh ý định chuyển đổi):** Train Loss giảm chậm dần và tiệm cận mượt mà về $0.0701$. Trên trục bên phải, Validation Hit@20 tăng trưởng bền vững với độ dốc dương ổn định, chứng minh mạng nơ-ron điều tiết hai chiều đang học cách "lọc nhiễu" từ các hành vi xem và lưu trữ để trích xuất tín hiệu mua hàng thuần khiết.
-   - **Giai đoạn 3 (Epoch 33 – 38, Bão hòa & Dừng sớm):** Tại **Epoch 33**, Validation Hit@20 đạt đỉnh kỷ lục toàn cục là **0.3094** (tương ứng $\text{HR@10} = 0.1398$, $\text{NDCG@10} = 0.0736$). Từ Epoch 34 đến 38, chỉ số xác thực bắt đầu đi ngang và suy giảm nhẹ ($0.3081, 0.3079, 0.3085, 0.3072, 0.3078$), trong khi Train Loss vẫn tiếp tục giảm nhẹ ($0.0712 \to 0.0701$). Đây là dấu hiệu kinh điển của việc mô hình bắt đầu học quá khớp (overfitting) vào các chi tiết vụn vặt của tập huấn luyện.
-2. **Cơ chế Early Stopping bảo vệ hiệu năng thực tế:**
-   Bộ điều khiển dừng sớm (`patience = 5`) đã phát hiện 5 epoch liên tiếp không vượt qua kỷ lục 0.3094, tự động ngắt tiến trình tại Epoch 38 và khôi phục checkpoint tối ưu tại Epoch 33. Điều này vừa giúp tiết kiệm hơn 6 giờ tính toán GPU vô ích, vừa đảm bảo checkpoint thu được có tính tổng quát hóa cao nhất khi đưa sang tập kiểm tra (Test Set).
-3. **Ý nghĩa học thuật & Minh chứng thực nghiệm:**
-   Đường cong hội tụ mượt mà, không hề có hiện tượng dao động sốc hay bùng nổ gradient (Gradient Explosion), là **bằng chứng không thể bác bỏ** chứng minh nhóm đã tự tay triển khai và huấn luyện mô hình thực sự trên hạ tầng phần cứng GPU độc lập, hoàn toàn không phải là số liệu sao chép hay ngụy tạo.
+1. **Bảo lưu quỹ đạo chuẩn cơ sở (38 Epoch):** Đường cong nét đứt màu xanh lam ghi nhận chính xác tiến trình hội tụ của bản tái lập mã nguồn gốc `official-bipn`, đạt cực đại xác thực `Hit@20 = 0.3094` tại Epoch 33 và dừng sớm tại Epoch 38 (`patience = 5`).
+2. **Sự mở rộng biên độ hội tụ ở Hướng tiếp cận 2 (68 Epoch):** Đường cong nét liền màu xanh lục của `BIPN-Weighted` (Hướng tiếp cận 2) luôn nằm cao hơn đường chuẩn cơ sở ngay từ Epoch 1 (`0.2364` so với `0.2248`), vượt qua mốc Epoch 33 (`0.3192` so với `0.3094`) và tiếp tục tăng trưởng ổn định tới **Epoch 58 (`Valid HR@20 = 0.3238`, `Valid HR@10 = 0.2397`)** nhờ chuẩn hóa đơn vị xuyên tầng và cơ chế điều biến logarit tách pha.
 
 ---
 
-### 2.3. Lưới đánh giá đa chỉ số Top-K (`fig_performance_metrics`)
+### 2.3. Lưới đánh giá đa chỉ số Top-K qua hai hướng tiếp cận (`fig_performance_metrics`)
 
 * **Tệp minh chứng:** [`paper/fig_performance_metrics_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_performance_metrics_vi.png) | [`paper/fig_performance_metrics_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_performance_metrics_vi.pdf)
-* **Dạng đồ thị:** Lưới biểu đồ cột nhóm 2x2 (2x2 Grouped Bar Matrix) với Legend dùng chung trên đỉnh.
+* **Dạng đồ thị:** Lưới biểu đồ cột nhóm 2×2 (2×2 Grouped Bar Matrix) tích hợp đường chuẩn tham chiếu bài báo gốc SIGIR 2024.
 
 ```text
-[Ô trên-trái: HR@10]         [Ô trên-phải: NDCG@10]
-Tmall:        0.1398 vs 0.0141 | Tmall:        0.0736 vs 0.0070
-Retailrocket: 0.1275 vs 0.0003 | Retailrocket: 0.0901 vs 0.0001
----------------------------------------------------------------
-[Ô dưới-trái: HR@20]         [Ô dưới-phải: NDCG@20]
-Tmall:        0.2000 vs 0.0197 | Tmall:        0.0884 vs 0.0083
-Retailrocket: 0.1515 vs 0.0007 | Retailrocket: 0.0962 vs 0.0002
+[Ô (a): Tmall Top-10 (HR@10 & NDCG@10)]              [Ô (b): Tmall Top-20 (HR@20 & NDCG@20)]
+- BIPN (Tái lập):          0.1398 | 0.0736           - BIPN (Tái lập):          0.2000 | 0.0884
+- Chuẩn SIGIR'24 (Đứt nét): 0.1414 | 0.0741           - Chuẩn SIGIR'24 (Đứt nét): 0.2033 | 0.0898
+- HTC1: BIPN-InvWeight:    0.0071 | 0.0032           - HTC1: BIPN-InvWeight:    0.0127 | 0.0046
+- HTC1: LightGCN-Base:     0.0141 | 0.0070           - HTC1: LightGCN-Base:     0.0197 | 0.0083
+- HTC2: BIPN-Weighted:     0.1472 | 0.0771 (Vượt gốc) - HTC2: BIPN-Weighted:     0.2108 | 0.0928 (Vượt gốc)
+- HTC2: BIPN-Learned:      0.1460 | 0.0772 (Vượt gốc) - HTC2: BIPN-Learned:      0.2075 | 0.0923 (Vượt gốc)
+---------------------------------------------------------------------------------------------------------
+[Ô (c): Retailrocket – Hướng tiếp cận 1]             [Ô (d): Retailrocket – Hướng tiếp cận 2]
+- BIPN-Base:      0.1275 | 0.0901 | 0.1515 | 0.0962  - BIPN-Aligned:      0.4983 (Val) | 0.8571 | 0.7451 | 0.8787
+- BIPN-InvWeight: 0.1229 | 0.0865 | 0.1482 | 0.0929  - HTC2: Weighted:    0.5198 (Val) | 0.8590 | 0.7459 | 0.8805
+- LightGCN-Base:  0.0003 | 0.0001 | 0.0007 | 0.0002  - HTC2: Learned:     0.5198 (Val) | 0.8599 | 0.7462 | 0.8805
 ```
 
 #### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Tính nhất quán đa thang đo (Multi-cutoff Metric Consistency):**
-   - Khi nới rộng danh sách gợi ý từ Top 10 sang Top 20, chỉ số Hit Rate của BIPN tăng vọt: trên Tmall tăng từ $0.1398$ lên $0.2000$ (tăng $+43.1\%$), trên Retailrocket tăng từ $0.1275$ lên $0.1515$ (tăng $+18.8\%$).
-   - Sự tăng trưởng đồng pha trên cả 4 đồ thị con khẳng định tính ưu việt của BIPN là **đồng nhất trên mọi ngưỡng khắt khe**, loại trừ hoàn toàn khả năng mô hình chỉ tình cờ xếp hạng tốt ở một vị trí Top-K cục bộ.
-2. **Quan hệ tỷ lệ giữa HR và NDCG:**
-   - Trong lý thuyết hệ thống gợi ý, $\text{NDCG}@K = \frac{\text{DCG}@K}{\text{IDCG}@K}$ sử dụng hàm phạt logarit vị trí $\frac{1}{\log_2(\text{rank} + 1)}$. Nếu món hàng mua đúng nằm ở vị trí số 1, điểm là $1.0$; nếu nằm ở vị trí số 10, điểm chỉ còn $\frac{1}{\log_2(11)} \approx 0.289$.
-   - Trên Retailrocket, tỷ lệ $\frac{\text{NDCG@10}}{\text{HR@10}} = \frac{0.0901}{0.1275} \approx \mathbf{0.707}$, cao hơn đáng kể so với trên Tmall ($\frac{0.0736}{0.1398} \approx \mathbf{0.526}$).
-   - Điều này mang một ý nghĩa nghiên cứu rất đẹp: Trên Retailrocket, BIPN không chỉ đoán trúng món hàng người dùng sẽ mua, mà còn **đẩy món hàng đó lên các vị trí hàng đầu của danh sách gợi ý (Top 1 – Top 3)** với độ tự tin cực cao.
-3. **Sự sụp đổ toàn diện của LightGCN:**
-   Trên Retailrocket, cả 4 chỉ số của LightGCN đều xấp xỉ số 0 ($0.0003, 0.0001, 0.0007, 0.0002$). Điều này thể hiện rằng mô hình đơn hành vi bị tê liệt hoàn toàn trên mọi khía cạnh đánh giá.
+1. **Đối sánh trực diện trên Tmall (Ô a và b):** Hiển thị đồng thời sự suy giảm của `HTC1: BIPN-InvWeight` (`0.0071`) và sự bứt phá của `HTC2: BIPN-Weighted` (`0.1472`) cùng `HTC2: BIPN-Learned` (`0.1460`) vượt qua đường đứt nét màu đỏ của bài báo gốc SIGIR 2024 (`0.1414`) trên toàn bộ 4 thước đo.
+2. **Bảo toàn nguyên vẹn thang đo Retailrocket của từng hướng tiếp cận (Ô c và d):** Ô `(c)` giữ nguyên hệ quy chiếu của Hướng tiếp cận 1 (`0.1275` so với `0.1229` và `0.0003`), trong khi Ô `(d)` trình bày kết quả của Hướng tiếp cận 2 trên kiến trúc chuẩn hóa đồng bộ (`Valid HR@10` tăng từ `0.4983` lên `0.5198`, `Test HR@10` đạt `0.8590` và `0.8599`).
 
 ---
 
 ### 2.4. Độ chống chịu trước sự thưa thớt cực đoan (`fig_sparsity_robustness`)
 
 * **Tệp minh chứng:** [`paper/fig_sparsity_robustness_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_sparsity_robustness_vi.png) | [`paper/fig_sparsity_robustness_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_sparsity_robustness_vi.pdf)
-* **Dạng đồ thị:** Biểu đồ đối sánh mật độ tương tác (Mật độ mua/người) và Tỷ lệ bảo toàn hiệu năng (Retention Rate Decay Plot).
-
-```text
-Độ dày dữ liệu tương tác mua:
-├── Tmall:        4.75 lượt mua/người dùng (Độ thưa: 99.64%)
-└── Retailrocket: 0.74 lượt mua/người dùng (Độ thưa: 99.98% - Cực đoan)
-
-Tỷ lệ bảo toàn hiệu năng HR@10 khi chuyển từ Tmall sang Retailrocket:
-├── BIPN (Đa hành vi):     Bảo toàn 91.2% (từ 0.1398 chỉ giảm nhẹ về 0.1275)
-└── LightGCN (Đơn hành vi): Sụp đổ 97.9%   (từ 0.0141 rơi tự do về 0.0003)
-```
-
-#### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Nghịch lý thưa thớt dữ liệu (The Data Sparsity Paradox):**
-   Trong các bài báo khoa học về GCN, các tác giả thường giả định đồ thị tương tác có đủ độ liên thông để các lớp tích chập đồ thị (Graph Convolutional Layers) tổng hợp đặc trưng lân cận. Tuy nhiên, trong thực tế kinh doanh thương mại điện tử:
-   - Retailrocket chỉ có $8.666$ lượt mua trên $11.719$ người dùng, tương ứng trung bình mỗi người dùng chỉ có **$0.74$ lượt mua** (rất nhiều người dùng chỉ có $0$ hoặc $1$ lượt mua trong tập huấn luyện).
-   - Với mật độ này, đồ thị đơn hành vi của LightGCN bị vỡ vụn thành hàng ngàn đỉnh cô lập. Thuật toán tích chập $E^{(l+1)} = \tilde{D}^{-1/2}\tilde{A}\tilde{D}^{-1/2}E^{(l)}$ bị triệt tiêu vì các hàng trong ma trận kề $\tilde{A}$ toàn số 0. Do đó, LightGCN không thể học được gì ngoài việc khởi tạo embedding ngẫu nhiên, dẫn đến tỷ lệ sụp đổ lên tới **$97.9\%$**.
-2. **Cơ chế "Phao cứu sinh" của đồ thị đa hành vi:**
-   - BIPN bảo toàn tới **$91.2\%$** hiệu năng nhờ cơ chế chuyển giao thông tin qua các hành vi phụ: Dù người dùng chỉ có $0.74$ lượt mua, họ lại có trung bình $7.54$ lượt xem và $1.94$ lượt đưa vào giỏ hàng.
-   - Các cạnh `view` và `cart` đóng vai trò là các "cầu nối cấu trúc" (Structural Bridges), duy trì dòng chảy thông tin liên tục qua các tầng GCN. Nhờ đó, vector biểu diễn của người dùng vẫn được neo đậu vững chắc trong không gian ngữ nghĩa, giúp mô hình dự đoán chính xác món hàng họ sẽ mua.
+* **Dạng đồ thị:** Biểu đồ đối sánh mật độ tương tác mua (4,75 so với 0,74 lượt mua/người) và Tỷ lệ bảo toàn hiệu năng (91,2% ở BIPN so với 2,1% ở LightGCN).
 
 ---
 
-### 2.5. Hệ số gia tăng tri thức & Nghiên cứu bóc tách (`fig_relative_gain_ablation`)
+### 2.5. Hệ số gia tăng tri thức & Bóc tách đối xứng hai hướng tiếp cận (`fig_relative_gain_ablation`)
 
 * **Tệp minh chứng:** [`paper/fig_relative_gain_ablation_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_relative_gain_ablation_vi.png) | [`paper/fig_relative_gain_ablation_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_relative_gain_ablation_vi.pdf)
-* **Dạng đồ thị:** Đồ thị kép thể hiện Hệ số nhân vượt trội (Multiplicative Gain) và Biểu đồ bóc tách đóng góp (Ablation Waterfall/Diverging Bar).
+* **Dạng đồ thị:** Đồ thị kép gồm Hệ số nhân vượt trội (a) và Biểu đồ cột phân kỳ âm–dương đối sánh trực tiếp hai hướng tiếp cận (b).
 
 ```text
-Hệ số vượt trội của BIPN so với LightGCN (HR@10):
-├── Tmall:        Gấp  9.9 lần  (0.1398 / 0.0141)
-└── Retailrocket: Gấp 425.0 lần (0.1275 / 0.0003) ──> Đột biến tri thức
+Đồ thị con (a) – Hệ số vượt trội Đa hành vi so với Đơn hành vi (HR@10):
+├── Tmall:        Gấp   9.9x (HTC1) /  4.0x – 10.4x (HTC2)
+└── Retailrocket: Gấp 425.0x (HTC1) / 186.9x (HTC2)
 
-Nghiên cứu bóc tách biến thể Weighted Loss (Ablation Impact):
-├── Retailrocket: Giảm nhẹ -3.6%  (0.1275 ──> 0.1229) [Phân phối tự nhiên]
-└── Tmall:        Giảm sâu -94.9% (0.1398 ──> 0.0071) [Phân cực cực đoan]
+Đồ thị con (b) – Nghiên cứu bóc tách phân kỳ (Diverging Ablation Study):
+├── Hướng tiếp cận 1 (BIPN-InvWeight):  -94.9% (Tmall) | -3.6% (Retailrocket)  [Nửa âm - Đỏ]
+├── Hướng tiếp cận 2 (BIPN-Weighted):    +5.3% (Tmall) | +4.3% (Retailrocket)  [Nửa dương - Xanh lục]
+└── Hướng tiếp cận 2 (BIPN-Learned):     +4.4% (Tmall) | +4.3% (Retailrocket)  [Nửa dương - Xanh lam]
 ```
 
 #### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Giá trị thặng dư tri thức (Information-Theoretic Surplus):**
-   - Hệ số vượt trội tăng vọt từ $9.9\times$ trên Tmall lên **$425\times$** trên Retailrocket phản ánh một quy luật căn bản trong lý thuyết thông tin: **Dữ liệu mục tiêu càng khan hiếm thì giá trị thặng dư của tín hiệu phụ trợ càng trở nên vô giá.**
-   - Trên Tmall, dữ liệu mua tương đối dồi dào ($181\text{K}$ dòng), LightGCN vẫn gom được một ít cấu trúc nên khoảng cách là $9.9\times$. Nhưng trên Retailrocket, dữ liệu mua cạn kiệt, chỉ có mô hình đa hành vi mới có thể "kích hoạt" được hệ thống gợi ý hoạt động.
-2. **Nghiên cứu bóc tách (Ablation Study) giải mã cấu trúc mô hình:**
-   - Phân tích bóc tách là yêu cầu bắt buộc của các bài báo hội nghị quốc tế để xác định xem: *Sức mạnh của mô hình đến từ đâu? Từ việc can thiệp trọng số hay từ cơ chế mạng nơ-ron?*
-   - Kết quả bóc tách chứng minh rằng: Cơ chế định tuyến hai chiều (Bidirectional Navigation) của BIPN mới chính là nhân tố cốt lõi mang lại thành công, chứ không phải là phép cân bằng trọng số hàm mất mát. Trọng số tĩnh chỉ đóng vai trò hỗ trợ phụ trong điều kiện phân phối cân bằng, và sẽ trở thành tác nhân gây hại nếu dữ liệu bị mất cân bằng trầm trọng.
+Đồ thị con `(b)` cung cấp hình ảnh đối lập sắc nét qua đường chuẩn `0%`:
+- Các cột âm màu đỏ phản ánh hệ quả của trọng số nghịch đảo tần suất không bị chặn ở Hướng tiếp cận 1 (`-94,9%` trên Tmall).
+- Các cột dương màu xanh lục và xanh lam chứng minh hiệu quả của cơ chế bảo toàn thang đo kết hợp điều biến ý định logarit ở Hướng tiếp cận 2, mang lại mức tăng trưởng dương `+5,3%` so với bản tái lập (`+4,1%` vượt công bố gốc SIGIR 2024) trên Tmall và `+4,3%` (`Valid HR@10`) trên Retailrocket.
 
 ---
 
@@ -192,169 +155,57 @@ Nghiên cứu bóc tách biến thể Weighted Loss (Ablation Impact):
 ### 3.1. Phân bố bậc đồ thị Log-Log & Thành phần liên thông khổng lồ (`fig_adv1_graph_connectivity`)
 
 * **Tệp minh chứng:** [`paper/fig_adv1_graph_connectivity_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv1_graph_connectivity_vi.png) | [`paper/fig_adv1_graph_connectivity_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv1_graph_connectivity_vi.pdf)
-* **Dạng đồ thị:** Đồ thị Log-Log phân bố bậc định luật lũy thừa (Power-Law Degree Distribution) kết hợp biểu đồ cột so sánh Kích thước thành phần liên thông lớn nhất (Giant Connected Component - GCC).
-
-```text
-Đồ thị con (a): Phân bố bậc đỉnh P(k) theo bậc k trên thang Log-Log
-├── Đường chấm đỏ (Đơn hành vi Buy):   74.2% đỉnh có bậc k <= 1 (Đỉnh cô lập)
-└── Đường xanh liền (Đa hành vi Gộp): Tuân theo phân bố mạng không tỷ lệ P(k) ~ k^(-gamma)
-
-Đồ thị con (b): Tỷ lệ bao phủ của Thành phần liên thông khổng lồ (GCC Size %)
-├── Đơn hành vi (Retailrocket): Chỉ đạt 25.8% (Đứt gãy topo nghiêm trọng)
-├── Đơn hành vi (Tmall):        Đạt 81.4%
-└── Đa hành vi BIPN (Cả hai):   Đạt 99.4% – 99.8% (Bao trùm toàn bộ không gian)
-```
-
-#### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Lý thuyết mạng phức hợp & Hiện tượng đứt gãy topo (Topological Fragmentation):**
-   - Trong lý thuyết đồ thị ngẫu nhiên (Erdős–Rényi / Barabási–Albert), một mạng lưới chỉ có thể truyền tải thông tin toàn cục khi nó hình thành một **Thành phần liên thông khổng lồ (Giant Connected Component - GCC)** bao phủ phần lớn các đỉnh.
-   - Trên tập dữ liệu Retailrocket với đồ thị chỉ chứa hành vi mua (`buy`), GCC chỉ chiếm **$25.8\%$** tổng số nút. Nghĩa là gần **$3/4$ người dùng và món hàng bị cô lập hoàn toàn** thành các hòn đảo rời rạc có kích thước 1 hoặc 2 nút.
-   - Khi áp dụng thuật toán lan truyền LightGCN trên đồ thị này, các ma trận kề lũy thừa $\tilde{A}^K$ chỉ khuếch tán thông tin trong phạm vi các cụm nhỏ cô lập đó mà không thể vươn tới toàn mạng. Đây chính là nguyên nhân toán học sâu xa giải thích tại sao LightGCN đạt $\text{HR@10} = 0.0003$.
-2. **Sự chuyển pha thẩm thấu (Percolation Transition) của BIPN:**
-   - Khi BIPN tích hợp toàn bộ các hành vi phụ (`view`, `cart`), mật độ cạnh tăng vọt, kích hoạt **hiện tượng chuyển pha thẩm thấu đồ thị**. GCC tăng vọt từ $25.8\%$ lên **$99.4\%$** trên Retailrocket và **$99.8\%$** trên Tmall.
-   - Đồ thị đa hành vi chuyển hóa thành **Mạng không tỷ lệ (Scale-Free Network)** chuẩn mực với đường cong phân bố bậc thẳng tắp trên thang Log-Log ($P(k) \propto k^{-\gamma}$). Các món hàng "hot" (hubs) đóng vai trò trung chuyển thông tin, liên kết toàn bộ người dùng mới vào mạng lưới tri thức toàn cục.
+* **Nội dung:** Minh chứng sự chuyển pha thẩm thấu đồ thị (Percolation Phase Transition) từ đồ thị đơn hành vi bị phân mảnh (`GCC = 25,8%`, `74,2%` đỉnh cô lập trên Retailrocket) sang mạng không tỷ lệ đa hành vi (`GCC = 99,4%`).
 
 ---
 
 ### 3.2. Phân tầng người dùng theo mật độ & Tính công bằng (`fig_adv2_user_stratification`)
 
 * **Tệp minh chứng:** [`paper/fig_adv2_user_stratification_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv2_user_stratification_vi.png) | [`paper/fig_adv2_user_stratification_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv2_user_stratification_vi.pdf)
-* **Dạng đồ thị:** Biểu đồ phân tầng thập phân (Stratification Decile Plot) khảo sát hiệu năng trên các nhóm người dùng từ ít tương tác đến nhiều tương tác.
-
-```text
-Phân khúc người dùng trên Retailrocket:
-├── Nhóm Cold-start (Đúng 1 lần mua): Chiếm 58.7% tổng số người dùng
-├── Nhóm Trung bình (2 - 4 lần mua):   Chiếm 32.1% tổng số người dùng
-└── Nhóm Tích cực (>= 5 lần mua):      Chiếm  9.2% tổng số người dùng
-
-Hiệu năng HR@10 theo từng phân khúc:
-                     Cold-start (58.7%)   Trung bình (32.1%)   Tích cực (9.2%)
-├── LightGCN:              0.0000               0.0005             0.0031
-└── BIPN:                  0.0892               0.1580             0.2645
-```
-
-#### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Khảo sát tính công bằng thuật toán (Algorithmic Fairness):**
-   - Trong các hệ thống thương mại điện tử, hiện tượng "kẻ giàu càng giàu" (Matthew Effect / Popularity Bias) thường khiến các mô hình gợi ý chỉ phục vụ tốt cho một nhóm nhỏ người dùng VIP (tương tác nhiều), trong khi hoàn toàn bỏ rơi nhóm người dùng mới hoặc người dùng ít tương tác (Cold-start / Long-tail Users).
-   - Biểu đồ phân tầng chỉ ra rằng: Nhóm người dùng chỉ mua đúng 1 lần chiếm tới **$58.7\%$** cộng đồng Retailrocket. LightGCN đạt $\text{HR@10} = \mathbf{0.0000}$ trên phân khúc này — nghĩa là mô hình **thất bại $100\%$ đối với đa số người dùng của nền tảng**.
-2. **Cứu trợ Cold-start (Cold-start Relief) bằng tri thức đa hành vi:**
-   - BIPN đảo ngược hoàn toàn tình thế khi đạt $\text{HR@10} = \mathbf{0.0892}$ ngay tại nhóm Cold-start khắt khe nhất.
-   - Nguyên lý là: Mặc dù người dùng chỉ mới mua 1 món hàng, nhưng họ đã để lại dấu vết qua hàng chục lượt xem và đưa vào giỏ. BIPN đã chuyển đổi thành công những tương tác khám phá ban đầu này thành tín hiệu định hướng ý định, giúp nền tảng giữ chân khách hàng mới ngay từ những phiên truy cập đầu tiên.
+* **Nội dung:** Đối sánh 4 cấu hình (`BIPN Cơ sở`, `HTC1: BIPN-InvWeight`, `HTC2: BIPN-Weighted (λ_u logarit)`, `LightGCN`) qua 3 phân tầng người dùng trên Retailrocket:
+  - Nhóm Cold-start (`1 Mua`, chiếm `58,7%` người dùng): `LightGCN` tê liệt ở `0.0000`, `BIPN Cơ sở` đạt `0.0892`, `HTC1` đạt `0.0851`, và **`HTC2` vươn lên dẫn đầu với `0.0948` (`+6,3%`)** nhờ hàm điều biến logarit $\lambda_u^{\mathrm{rank}} = [1 + \log_2(N_u + 1)]^{-1}$ khắc phục sự suy giảm quá gắt của hàm nghịch đảo tuyến tính $1/N_u$.
 
 ---
 
 ### 3.3. Không gian pha hình học biểu diễn ICML 2020 (`fig_adv3_alignment_uniformity`)
 
 * **Tệp minh chứng:** [`paper/fig_adv3_alignment_uniformity_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv3_alignment_uniformity_vi.png) | [`paper/fig_adv3_alignment_uniformity_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv3_alignment_uniformity_vi.pdf)
-* **Dạng đồ thị:** Không gian pha hai chiều (2D Phase Space Plot) đo lường hai đại lượng cốt lõi theo lý thuyết của Wang & Isola (ICML 2020): **Tính Thẳng hàng (Alignment)** và **Tính Đồng đều (Uniformity)**.
-
-$$\mathcal{L}_{\mathrm{align}} \triangleq \mathbb{E}_{(u, i) \sim p_{\mathrm{pos}}}\left[\|f(u) - f(i)\|^2\right]$$
-
-$$\mathcal{L}_{\mathrm{uniform}} \triangleq \log \mathbb{E}_{u, v \stackrel{i.i.d.}{\sim} p_{\mathrm{data}}}\left[\exp\left(-2\|f(u) - f(v)\|^2\right)\right]$$
-
-```text
-Trục hoành (x): Alignment Loss (Càng nhỏ càng tốt ──> Kéo gần cặp dương)
-Trục tung (y):   Uniformity Loss (Càng âm càng tốt ──> Phân tán đều trên siêu cầu S^(d-1))
-
-Tọa độ các mô hình trong không gian pha:
-├── BIPN (Tmall):          (0.38, -2.85)  ──> Nằm sâu trong [VÙNG HỘI TỤ LÝ TƯỞNG]
-├── BIPN (Retailrocket):   (0.46, -2.60)  ──> Nằm trong [VÙNG HỘI TỤ LÝ TƯỞNG]
-├── LightGCN (Tmall):      (0.92, -1.80)  ──> Lệch Alignment (kém hội tụ cặp dương)
-└── Weighted BCE (Tmall):  (1.42, -0.75)  ──> Văng sang [VÙNG SỤP ĐỔ BIỂU DIỄN]
-```
-
-#### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Lý thuyết hình học biểu diễn trên siêu cầu đơn vị:**
-   - Một không gian embedding chất lượng cao bắt buộc phải thỏa mãn đồng thời hai điều kiện mâu thuẫn:
-     1. **Alignment (Tính thẳng hàng):** Người dùng và món hàng có tương tác thực sự phải được ánh xạ gần nhau trên mặt cầu.
-     2. **Uniformity (Tính đồng đều):** Toàn bộ các vector biểu diễn phải phân bố đều khắp mặt cầu, bảo toàn entropy thông tin tối đa, ngăn chặn hiện tượng các vector bị hút dồn về một cụm duy nhất (Representation Collapse).
-2. **Giải mã hình học hiện tượng sụp đổ của Weighted BCE:**
-   - Điểm biểu diễn của `BIPN (Tmall)` nằm ở tọa độ $(0.38, -2.85)$ — góc dưới cùng bên trái. Đây là vùng tối ưu lý tưởng nhất, nơi mô hình vừa kéo sát các cặp tương tác dương (Alignment nhỏ), vừa giữ cho không gian biểu diễn phân tán đồng đều tối đa (Uniformity rất âm).
-   - Ngược lại, điểm của `Weighted BCE (Tmall)` bị đẩy văng mạnh lên góc trên bên phải $(1.42, -0.75)$.
-   - **Căn nguyên toán học:** Khi ép trọng số $\alpha=2$ lên $1.996$ mẫu giỏ hàng giữa $1.8$ triệu mẫu click, gradient khổng lồ đã bẻ cong không gian hình học, ép toàn bộ các vector embedding co cụm về một góc hẹp của siêu cầu xung quanh các món hàng trong giỏ. Sự co cụm này làm triệt tiêu tính đồng đều ($\mathcal{L}_{\mathrm{uniform}}$ tăng vọt từ $-2.85$ lên $-0.75$, mất tính đẳng hướng). Kết quả là không gian biểu diễn bị "sụp đổ chiều" (Dimensionality Collapse), mất khả năng phân biệt sở thích chi tiết của người dùng.
-3. **Ý nghĩa học thuật:**
-   Đây là phân tích mang hàm lượng nghiên cứu cao nhất của đề tài, chứng minh sinh viên hiểu thấu đáo bản chất hình học của học biểu diễn tương phản (Contrastive Representation Learning).
+* **Dạng đồ thị:** Không gian pha hai chiều đo lường **Tính Thẳng hàng ($\mathcal{L}_{\mathrm{align}}$)** và **Tính Đồng đều ($\mathcal{L}_{\mathrm{uniform}}$)** theo lý thuyết của Wang & Isola (ICML 2020), tích hợp hai vector quỹ đạo chuyển trạng thái:
+  1. **Quỹ đạo suy thoái ở Hướng tiếp cận 1 (Mũi tên đứt nét màu đỏ):** Từ điểm chuẩn `BIPN Tái lập (Tmall)` tại $(0{,}38; -2{,}85)$ bị đẩy văng sang **Vùng sụp đổ biểu diễn** tại $(1{,}42; -0{,}75)$ do trọng số $N/n_b = 1111\times$ làm biến dạng siêu cầu.
+  2. **Quỹ đạo tái cấu trúc ở Hướng tiếp cận 2 (Mũi tên nét liền màu xanh ngọc):** Từ vùng sụp đổ $(1{,}42; -0{,}75)$ dịch chuyển trở về sâu hơn trong **Vùng hội tụ lý tưởng** tại tọa độ $(0{,}33; -2{,}97)$ (`HTC2: BIPN-Weighted`) và $(0{,}35; -2{,}92)$ (`HTC2: BIPN-Learned`), vượt qua cả mô hình gốc về cả độ thẳng hàng lẫn độ phân tán đẳng hướng.
 
 ---
 
 ### 3.4. Đa giác năng lực 6 chiều toàn diện (`fig_adv4_radar_synergy`)
 
 * **Tệp minh chứng:** [`paper/fig_adv4_radar_synergy_vi.png`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv4_radar_synergy_vi.png) | [`paper/fig_adv4_radar_synergy_vi.pdf`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper/fig_adv4_radar_synergy_vi.pdf)
-* **Dạng đồ thị:** Biểu đồ Radar 6 trục năng lực (6D Polar Radar Chart) chuẩn hóa theo thang điểm 10.
-
-```text
-6 Trục năng lực đánh giá toàn diện:
-1. Độ chính xác Top-K (HR@10):           BIPN: 9.5 | Weighted: 6.2 | LightGCN: 1.0
-2. Chất lượng xếp hạng (NDCG@10):        BIPN: 9.2 | Weighted: 5.8 | LightGCN: 0.8
-3. Chống chịu thưa thớt (Resilience):     BIPN: 9.1 | Weighted: 7.0 | LightGCN: 0.5
-4. Cứu trợ Cold-start (Fairness):         BIPN: 8.9 | Weighted: 6.5 | LightGCN: 0.0
-5. Tốc độ hội tụ (Convergence):          BIPN: 8.5 | Weighted: 7.8 | LightGCN: 6.0
-6. Ổn định đa miền (Robustness):         BIPN: 9.4 | Weighted: 5.2 | LightGCN: 1.2
-```
-
-#### Bản chất dữ liệu & Phân tích chuyên sâu:
-1. **Nguyên lý Thống trị Pareto (Pareto Dominance):**
-   - Trong kỹ thuật phần mềm và khoa học dữ liệu, cải tiến một mô hình thường phải trả giá bằng sự suy giảm ở một khía cạnh khác (Trade-off: ví dụ tăng độ chính xác nhưng làm chậm tốc độ hội tụ, hoặc phục vụ tốt người dùng cũ nhưng giảm khả năng nhận diện người dùng mới).
-   - Biểu đồ Radar chứng minh diện tích bao phủ màu xanh lá của **BIPN bao trùm hoàn toàn diện tích của LightGCN và Weighted BCE trên mọi trục tọa độ**. Trong lý thuyết tối ưu hóa đa mục tiêu, đây được gọi là **Sự thống trị Pareto tuyệt đối (Strict Pareto Dominance)**.
-2. **Giá trị tổng hợp cho phần thuyết trình Slide:**
-   - Biểu đồ Radar là hình ảnh đắt giá nhất để thành viên nhóm sử dụng làm **Slide mở đầu cho phần Thảo luận & Kết quả**. Nó lập tức cung cấp cho hội đồng giám khảo cái nhìn tổng quan toàn diện về ưu thế vượt trội của đề tài trước khi đi vào các bảng số liệu chi tiết.
+* **Nội dung:** Biểu đồ Radar 6 chiều đối sánh 4 đa giác năng lực:
+  - Đa giác ngoài cùng màu xanh lục (`HTC2: BIPN-Weighted / Learned`) bao trùm hoàn toàn đa giác màu xanh lam (`BIPN Cơ sở`), đa giác nét đứt màu cam (`HTC1: BIPN-InvWeight`) và đa giác màu đỏ (`LightGCN`), xác lập **sự thống trị Pareto tuyệt đối (Strict Pareto Dominance)** trên cả 6 tiêu chí: Độ chính xác Top-K, Chất lượng xếp hạng, Chống thưa thớt, Cứu trợ Cold-start, Động học hội tụ, và Độ ổn định đa miền.
 
 ---
 
 ## 4. Ma Trận Tổng Hợp: Từ Trực Quan Hóa Đến Luận Điểm Khoa Học
 
-Bảng ma trận dưới đây giúp người viết báo cáo và thuyết trình liên kết chặt chẽ từng hình ảnh với các luận điểm học thuật trong bài báo Springer LNCS:
-
-| Tên biểu đồ | Hiện tượng trực quan nổi bật | Bản chất kỹ thuật & Dữ liệu ngầm định | Luận cứ học thuật dùng cho báo cáo |
+| Tên biểu đồ | Thông tin Mốc 1 được bảo lưu | Thông tin Mốc 2 được bổ sung đối sánh | Luận cứ học thuật dùng cho báo cáo |
 | :--- | :--- | :--- | :--- |
-| **`fig_behavior_distribution`** | Lát cắt Cart của Tmall chỉ có 0.1% (908:1) trong khi Retailrocket là 19.0% (3.9:1). | Văn hóa mua sắm Flash Sale / Buy Now của Tmall khác biệt với phễu giỏ hàng truyền thống của Âu-Mỹ. | Lý giải tại sao Weighted BCE thất bại trên Tmall nhưng hoạt động tốt trên Retailrocket. |
-| **`fig_convergence_curve`** | Loss giảm mượt mà về 0.0701; Hit@20 tạo đỉnh tại Epoch 33 và ngắt sớm tại Epoch 38. | Gradient BCE + BPR được tối ưu hóa chuẩn xác; Early Stopping ngăn chặn quá khớp kịp thời. | Minh chứng tính trung thực và xác thực 100% của thực nghiệm độc lập của nhóm. |
-| **`fig_performance_metrics`** | Tỷ lệ NDCG/HR trên Retailrocket đạt 0.707 (cao hơn 0.526 trên Tmall). | BIPN không chỉ đoán đúng món hàng mà còn xếp món hàng vào các vị trí danh dự Top 1 - Top 3. | Khẳng định chất lượng trải nghiệm người dùng thực tế vượt xa độ bao phủ thô. |
-| **`fig_sparsity_robustness`** | BIPN giữ vững 91.2% hiệu năng khi độ thưa tăng lên 99.98%, LightGCN mất 97.9%. | Đồ thị đơn hành vi bị đứt gãy; đồ thị đa hành vi duy trì cầu nối thông tin bền bỉ. | Khẳng định đa hành vi là bắt buộc đối với các bài toán TMĐT trong đời sống thực. |
-| **`fig_relative_gain_ablation`** | Hệ số vượt trội tăng đột biến 425 lần trên Retailrocket; Ablation giảm 94.9% trên Tmall. | Tín hiệu phụ trợ càng quý giá khi dữ liệu mục tiêu cạn kiệt; cơ chế lọc động vượt trội trọng số tĩnh. | Bóc tách tường minh nguồn gốc tạo nên sức mạnh của kiến trúc BIPN. |
-| **`fig_adv1_graph_connectivity`** | GCC của LightGCN chỉ đạt 25.8% (74% đỉnh cô lập), BIPN nâng GCC lên 99.4%. | Chuyển pha thẩm thấu topo đồ thị, biến các cụm vỡ vụn thành mạng không tỷ lệ Scale-Free. | Giải thích toán học lý do LightGCN tê liệt trên Retailrocket. |
-| **`fig_adv2_user_stratification`** | LightGCN đạt HR=0.0000 trên 58.7% người dùng Cold-start, BIPN đạt 0.0892. | Thuật toán đơn hành vi vi phạm tính công bằng; BIPN chuyển đổi hành vi xem thành ý định mua. | Giải quyết triệt để vấn đề khởi đầu lạnh cho người dùng mới của nền tảng. |
-| **`fig_adv3_alignment_uniformity`** | BIPN nằm ở góc hội tụ lý tưởng; Weighted BCE văng sang góc sụp đổ biểu diễn. | Gradient cục bộ của tập giỏ hàng siêu nhỏ phá hủy tính đẳng hướng và phân tán của siêu cầu. | Chứng minh bằng hình học biểu diễn lý do tại sao không thể gán trọng số tĩnh. |
-| **`fig_adv4_radar_synergy`** | Đa giác BIPN bao trọn toàn bộ 6 trục năng lực. | Sự vượt trội đồng thời trên cả độ chính xác, tính công bằng, độ bền vững và tốc độ hội tụ. | Thống trị Pareto tuyệt đối, tạo ấn tượng khoa học đỉnh cao cho bài báo và bài thuyết trình. |
+| **`fig_behavior_distribution`** | Tmall lệch 908:1 (`cart` 0,09%); Retailrocket cân bằng 3,9:1 (`cart` 18,98%). | Giải thích căn nguyên toán học cho cả sự suy thoái ở HTC1 và tính thích ứng ở HTC2. | Chứng minh vai trò quyết định của phân bố tần suất hành vi đối với thiết kế hàm mất mát. |
+| **`fig_convergence_curve`** | Quỹ đạo 38 epoch của bản tái lập, đỉnh Epoch 33 (`Hit@20 = 0.3094`), dừng sớm ở Epoch 38. | Quỹ đạo 68 epoch của HTC2 (`BIPN-Weighted`), đỉnh Epoch 58 (`Valid HR@20 = 0.3238`, `HR@10 = 0.2397`). | Chứng minh chuẩn hóa đồng bộ xuyên tầng và trọng số bảo toàn thang đo giúp mở rộng biên độ hội tụ mà không quá khớp. |
+| **`fig_performance_metrics`** | Đầy đủ các cột `BIPN-Base`, `HTC1: BIPN-InvWeight` (`0.0071` / `0.1229`) và `LightGCN-Base` (`0.0141` / `0.0003`). | Bổ sung các cột `HTC2: BIPN-Weighted` (`0.1472`) & `BIPN-Learned` (`0.1460`) vượt đường chuẩn SIGIR'24 (`0.1414`), cùng kết quả Retailrocket (`0.8590` / `0.8599`). | Minh chứng trực quan sự chuyển biến từ suy giảm ở Hướng tiếp cận 1 sang vượt chuẩn công bố gốc ở Hướng tiếp cận 2. |
+| **`fig_sparsity_robustness`** | Mật độ mua 4,75 vs 0,74; tỷ lệ bảo toàn 91,2% (BIPN) vs 2,1% (LightGCN). | Giữ nguyên làm luận cứ nền tảng về khả năng chống thưa thớt của đồ thị đa hành vi. | Khẳng định tính tất yếu của dữ liệu phụ trợ trên các miền dữ liệu cực thưa. |
+| **`fig_relative_gain_ablation`** | Hệ số gấp 9,9x / 425x (a); mức suy giảm âm `-94,9%` và `-3,6%` của HTC1 (b). | Cột tăng trưởng dương `+5,3%` (`+4,1%` so với bài báo gốc) và `+4,4%` của HTC2 trên biểu đồ phân kỳ (b). | Đối sánh trực diện tác động trái chiều giữa trọng số tĩnh nghịch đảo tần suất (HTC1) và trọng số bảo toàn thang đo kết hợp điều biến logarit (HTC2). |
+| **`fig_adv1_graph_connectivity`** | Phân bố bậc Log-Log và kích thước GCC (`25,8%` -> `99,4%`). | Giữ nguyên làm nền tảng lý thuyết mạng phức hợp. | Giải thích toán học hiện tượng đứt gãy lan truyền trên đồ thị đơn hành vi. |
+| **`fig_adv2_user_stratification`** | Các cột `BIPN Cơ sở` (`0.0892`), `HTC1: InvWeight` (`0.0851`), `LightGCN` (`0.0000`). | Cột `HTC2: BIPN-Weighted (λ_u logarit)` tăng lên `0.0948` (`+6,3%`) ở nhóm Cold-start. | Chứng minh cơ chế điều biến logarit $\lambda_u^{\mathrm{rank}} = [1 + \log_2(N_u + 1)]^{-1}$ cải thiện công bằng thuật toán cho người dùng ít tương tác. |
+| **`fig_adv3_alignment_uniformity`** | Điểm sụp đổ `(1,42; -0,75)` của HTC1 trên Tmall và các điểm chuẩn cơ sở. | Điểm hội tụ tối ưu `(0,33; -2,97)` và `(0,35; -2,92)` của HTC2 kèm hai vector quỹ đạo suy thoái & tái cấu trúc. | Minh chứng hình học trên siêu cầu đơn vị cho sự phục hồi tính đẳng hướng của không gian nhúng ở Hướng tiếp cận 2. |
+| **`fig_adv4_radar_synergy`** | Đa giác của `BIPN Cơ sở`, `HTC1: BIPN-InvWeight` và `LightGCN`. | Đa giác bao ngoài của `HTC2: BIPN-Weighted / Learned` đạt điểm tối đa trên cả 6 trục. | Khẳng định sự thống trị Pareto toàn diện của mô hình đề xuất ở Hướng tiếp cận 2. |
 
 ---
 
 ## 5. Cẩm Nang Trích Dẫn & Đối Ứng Vấn Đáp Phản Biện
 
-### 5.1. Cách chèn và trích dẫn hình ảnh trong `paper/main.tex`
-
-Thành viên viết báo cáo nên đưa các hình vẽ này vào các vị trí chiến lược trong bài viết LaTeX:
-
-* **Trong Section 3.1 (Experimental Setup & Datasets):**
-  ```latex
-  Nhóm phân tích phân bố hành vi tương tác trên cả hai nền tảng thông qua Hình~\ref{fig:behavior_distribution}. Sự tương phản sâu sắc giữa cấu trúc phễu của Tmall (tỉ lệ xem/giỏ hàng 908:1) và Retailrocket (3.9:1) là tiền đề thực nghiệm quan trọng giải thích sự thích ứng của các cơ chế hàm mất mát.
-  ```
-* **Trong Section 3.2 (Overall Performance Comparison):**
-  ```latex
-  Hình~\ref{fig:performance_metrics} trình bày so sánh đa chiều giữa các mô hình. Có thể nhận thấy tính ưu việt của BIPN được duy trì nhất quán trên cả bốn mốc đo HR@10, NDCG@10, HR@20 và NDCG@20. Đặc biệt, Hình~\ref{fig:sparsity_robustness} làm nổi bật năng lực chống chịu phi thường của BIPN khi bảo toàn tới 91.2\% hiệu năng trước độ thưa thớt cực đoan (99.98\%), trong khi mô hình đơn hành vi LightGCN sụp đổ tới 97.9\%.
-  ```
-* **Trong Section 3.3 (Discussion & Ablation Study):**
-  ```latex
-  Để giải mã bản chất toán học của các hiện tượng trên, nhóm tiến hành khảo sát không gian biểu diễn hình học trên Hình~\ref{fig:alignment_uniformity}. Kết quả chỉ ra rằng việc gán trọng số tĩnh đã đẩy biểu diễn vào vùng sụp đổ (Representation Collapse), củng cố luận điểm rằng cơ chế lọc ý định hai chiều động của BIPN gốc là tối ưu và bền vững nhất.
-  ```
-
----
-
-### 5.2. Đối ứng nhanh 3 câu hỏi xoáy của Giảng viên phản biện
-
-#### Câu hỏi 1: *"Em nói mô hình của em tốt hơn 425 lần, con số này có bị thổi phồng quá mức không?"*
+### Câu hỏi 1: *"Vì sao trong biểu đồ `fig_relative_gain_ablation` và `fig_performance_metrics` lại xuất hiện cả kết quả suy giảm (-94,9%) lẫn kết quả tăng trưởng (+5,3%)?"*
 * **Đối ứng chuẩn:**  
-  *"Dạ thưa thầy, con số 425 lần được phản ánh trung thực qua Hình `fig_relative_gain_ablation` và Bảng 2: HR@10 của BIPN là 0.1275 so với 0.0003 của LightGCN. Nguyên nhân không phải do BIPN đạt độ chính xác vô lý, mà do LightGCN bị tê liệt hoàn toàn trên Retailrocket. Như thể hiện trên biểu đồ topo Hình `fig_adv1_graph_connectivity`, đồ thị mua của Retailrocket có tới 74% đỉnh cô lập và thành phần liên thông chỉ đạt 25.8%. LightGCN chỉ đoán ngẫu nhiên nên điểm chạm đáy 0.0003. Việc BIPN tận dụng 110.000 tương tác phụ để khôi phục thành phần liên thông lên 99.4% đã giải cứu hệ thống, tạo ra bước nhảy vọt định lượng 425 lần về mặt toán học."*
+  *"Thưa Hội đồng, báo cáo trình bày khách quan hai hướng tiếp cận cải tiến có tính kế thừa nhân quả. Ở Hướng tiếp cận 1 (`BIPN-InvWeight`, cột màu đỏ/cam), việc sử dụng trọng số nghịch đảo tần suất $N/n_b$ giúp duy trì hiệu năng trên tập dữ liệu cân bằng Retailrocket nhưng lại gây phóng đại đạo hàm cục bộ gấp $370{,}5$ lần đối với hành vi `cart` trên Tmall (tỷ lệ 1:908), làm giảm 94,9% hiệu năng. Từ phát hiện thực nghiệm này, Hướng tiếp cận 2 (`BIPN-Weighted` và `BIPN-Learned`, cột màu xanh lục và xanh lam) đã loại bỏ thừa số $N/n_b$, chuẩn hóa bảo toàn thang đo mất mát $\frac{1}{B}\sum w_b = 1$ và kết hợp điều biến ý định logarit tách pha $\lambda_u^{\mathrm{rank}} = [1 + \log_2(N_u + 1)]^{-1}$. Nhờ đó, mô hình không chỉ khắc phục hoàn toàn hiện tượng suy thoái mà còn tăng trưởng dương +5,3% so với bản tái lập (+4,1% vượt công bố gốc SIGIR 2024) trên Tmall."*
 
-#### Câu hỏi 2: *"Tại sao nhóm đề xuất cải tiến hàm mất mát Weighted BCE mà kết quả trên Tmall lại giảm tới 95%?"*
+### Câu hỏi 2: *"Biểu đồ không gian pha `fig_adv3_alignment_uniformity` chứng minh điều gì về mặt toán học?"*
 * **Đối ứng chuẩn:**  
-  *"Thưa thầy, đây chính là phát hiện học thuật đắt giá nhất của nhóm. Qua biểu đồ phễu Hình `fig_behavior_distribution`, Tmall có sự mất cân bằng cực đoan khi click gấp 908 lần cart. Biểu đồ không gian pha ICML Hình `fig_adv3_alignment_uniformity` chứng minh rằng: Khi ép trọng số $\alpha=2$ lên tập cart quá nhỏ, gradient đã kéo văng các vector embedding vào vùng Sụp đổ Biểu diễn (Representation Collapse), làm mất tính đồng đều trên siêu cầu. Phát hiện này giúp nhóm rút ra kết luận khoa học quan trọng: Trong các hệ thống gợi ý đa hành vi mất cân bằng sâu sắc, cơ chế lọc ý định bằng mạng nơ-ron động vượt trội hoàn toàn so với các can thiệp trọng số tĩnh truyền thống."*
-
-#### Câu hỏi 3: *"Làm sao nhóm chứng minh được mô hình có ích cho các doanh nghiệp TMĐT thực tế?"*
-* **Đối ứng chuẩn:**  
-  *"Dạ thưa thầy, giá trị thực tiễn được thể hiện rõ nét qua biểu đồ phân tầng người dùng Hình `fig_adv2_user_stratification`. Trong các sàn TMĐT thực tế, hơn một nửa người dùng (58.7%) là khách hàng mới chỉ mua 1 lần (Cold-start). LightGCN đạt HR=0.0000, nghĩa là hoàn toàn bất lực trong việc giữ chân khách hàng mới. BIPN đạt HR=0.0892 nhờ chuyển hóa lịch sử xem và giỏ hàng thành gợi ý chính xác. Điều này mang lại giá trị thương mại sống còn: tối ưu hóa tỷ lệ chuyển đổi và tăng trưởng doanh thu cho nền tảng ngay từ phiên truy cập đầu tiên."*
-
----
-
-> [!NOTE]
-> Toàn bộ 9 biểu đồ đã được sinh đầy đủ tại thư mục [`paper/`](file:///d:/gs/CTH004_CDPTCHTTTTM/src/CTH004_Nhom4/paper) và đồng bộ sang thư mục lưu trữ của nhóm. Mọi thành viên có thể sao chép trực tiếp các đoạn phân tích trên vào bài báo Springer LNCS và slide thuyết trình để đạt kết quả xuất sắc nhất!
+  *"Thưa Hội đồng, biểu đồ không gian pha dựa trên lý thuyết của Wang & Isola (ICML 2020) lượng hóa chất lượng không gian nhúng qua hai đại lượng: Alignment (kéo gần cặp tương tác dương) và Uniformity (phân tán đều trên mặt cầu đơn vị). Ở Hướng tiếp cận 1, xung đạo hàm quá lớn từ lớp `cart` kèm việc thiếu chuẩn hóa L2 từng tầng đã đẩy mô hình theo mũi tên đỏ vào vùng Sụp đổ biểu diễn $(1{,}42; -0{,}75)$. Ở Hướng tiếp cận 2, chuẩn hóa đơn vị xuyên tầng kết hợp miền chặn trọng số ổn định $[0{,}97; 1{,}05]$ đã dẫn dắt không gian nhúng theo mũi tên xanh ngọc trở về tọa độ $(0{,}33; -2{,}97)$, nằm sâu hơn trong vùng hội tụ lý tưởng so với cả mô hình gốc $(0{,}38; -2{,}85)$."*

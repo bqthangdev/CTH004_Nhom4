@@ -4,7 +4,9 @@ import shutil
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Set base style
+# Set base style (embed TrueType fonts Type 42 in PDF to prevent pdfTeX subset glyph collisions)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.9
@@ -18,7 +20,8 @@ else:
     PROJECT_ROOT = SCRIPT_DIR
     VIS_DIR = os.path.join(PROJECT_ROOT, 'visualization')
 PAPER_DIR = os.path.join(PROJECT_ROOT, 'paper')
-LOG_FILE = os.path.join(PROJECT_ROOT, 'official-bipn', 'log', 'model', 'tmall_enb_64_2026-10-17 13_56_43.log')
+LOG_FILE_M1 = os.path.join(PROJECT_ROOT, 'official-bipn', 'log', 'model', 'tmall_enb_64_2026-10-17 13_56_43.log')
+LOG_FILE_M2 = os.path.join(PROJECT_ROOT, 'bipn', 'logs', 'tmall_weighted.log')
 
 # Output ONLY to paper/ directory as requested
 OUTPUT_DIRS = [PAPER_DIR]
@@ -34,135 +37,271 @@ def save_current_figure(fn_base):
     plt.close()
 
 # ==============================================================================
-# 1. FIGURE 1: MULTI-METRIC PERFORMANCE COMPARISON (HR@10, NDCG@10, HR@20, NDCG@20)
+# 1. FIGURE 1: MULTI-METRIC PERFORMANCE COMPARISON (PRESERVING APPROACH 1 + ADDING APPROACH 2)
 # ==============================================================================
 def plot_performance_metrics(lang='vi'):
-    datasets = ['Tmall', 'Retailrocket']
-    models_labels = {
-        'vi': ['BIPN (Gốc)', 'BIPN (Có trọng số)', 'LightGCN (Đơn hành vi)'],
-        'en': ['BIPN (Vanilla)', 'BIPN (Weighted)', 'LightGCN (Single-behavior)']
-    }[lang]
-    
-    # Data: HR@10, NDCG@10, HR@20, NDCG@20
-    data_hr10 = [[0.1398, 0.1275], [0.0071, 0.1229], [0.0141, 0.0003]]
-    data_ndcg10 = [[0.0736, 0.0901], [0.0032, 0.0865], [0.0070, 0.0001]]
-    data_hr20 = [[0.2000, 0.1515], [0.0127, 0.1482], [0.0197, 0.0007]]
-    data_ndcg20 = [[0.0884, 0.0962], [0.0046, 0.0929], [0.0083, 0.0002]]
+    fig, axes = plt.subplots(2, 2, figsize=(13.2, 9.2), dpi=300)
 
-    fig, axes = plt.subplots(2, 2, figsize=(11.5, 8.2), dpi=300)
-    colors = ['#1f77b4', '#ff7f0e', '#7f7f7f']
-    width = 0.25
-    x = np.arange(len(datasets))
+    # Colors consistent across subplots
+    c_base = '#1f77b4'      # BIPN Baseline / Aligned
+    c_m1_inv = '#ff7f0e'    # Approach 1: BIPN-InvWeight
+    c_lgcn = '#7f7f7f'      # Single-behavior LightGCN
+    c_m2_w = '#2ca02c'      # Approach 2: BIPN-Weighted (Proposed)
+    c_m2_l = '#17becf'      # Approach 2: BIPN-Learned (Proposed)
 
-    metrics_config = [
-        (axes[0, 0], data_hr10, 'HR@10', 0.168,
-         '(a) Tỷ lệ trúng đích Top 10 (HR@10)' if lang == 'vi' else '(a) Hit Ratio @ 10 (HR@10)'),
-        (axes[0, 1], data_ndcg10, 'NDCG@10', 0.118,
-         '(b) Độ liên quan xếp hạng Top 10 (NDCG@10)' if lang == 'vi' else '(b) Normalized Discounted Cumulative Gain @ 10 (NDCG@10)'),
-        (axes[1, 0], data_hr20, 'HR@20', 0.238,
-         '(c) Tỷ lệ trúng đích Top 20 (HR@20)' if lang == 'vi' else '(c) Hit Ratio @ 20 (HR@20)'),
-        (axes[1, 1], data_ndcg20, 'NDCG@20', 0.128,
-         '(d) Độ liên quan xếp hạng Top 20 (NDCG@20)' if lang == 'vi' else '(d) Normalized Discounted Cumulative Gain @ 20 (NDCG@20)'),
+    # --------------------------------------------------------------------------
+    # Subplot (a): Tmall Top-10 Metrics (HR@10 & NDCG@10) across Approach 1 & 2
+    # --------------------------------------------------------------------------
+    ax = axes[0, 0]
+    x_a = np.arange(2)
+    labels_a = ['HR@10', 'NDCG@10']
+    width_a = 0.155
+
+    series_a = [
+        ('BIPN (Tái lập)' if lang == 'vi' else 'BIPN (Replicated)', [0.1398, 0.0736], c_base),
+        ('HTC1: BIPN-InvWeight' if lang == 'vi' else 'App.1: BIPN-InvWeight', [0.0071, 0.0032], c_m1_inv),
+        ('HTC1: LightGCN-Base' if lang == 'vi' else 'App.1: LightGCN-Base', [0.0141, 0.0070], c_lgcn),
+        ('HTC2: BIPN-Weighted (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Weighted (Ours)', [0.1472, 0.0771], c_m2_w),
+        ('HTC2: BIPN-Learned (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Learned (Ours)', [0.1460, 0.0772], c_m2_l),
     ]
 
-    for ax, data, ylabel, y_max, title in metrics_config:
-        for i in range(3):
-            offset = (i - 1) * width
-            rects = ax.bar(x + offset, data[i], width, label=models_labels[i],
-                           color=colors[i], edgecolor='black', linewidth=0.7, alpha=0.9)
-            for rect in rects:
-                h = rect.get_height()
-                ax.annotate(f'{h:.4f}',
-                            xy=(rect.get_x() + rect.get_width() / 2, h),
-                            xytext=(0, 3), textcoords="offset points",
-                            ha='center', va='bottom', fontsize=10.5, fontweight='bold')
-        ax.set_ylabel(ylabel, fontsize=12, fontweight='bold')
-        ax.set_title(title, fontsize=12.5, fontweight='bold', pad=9)
-        ax.set_xticks(x)
-        ax.set_xticklabels(datasets, fontsize=12, fontweight='bold')
-        ax.tick_params(axis='y', labelsize=10.5)
-        ax.set_ylim(0, y_max)
-        ax.grid(axis='y', linestyle='--', alpha=0.45)
+    for i, (lbl, vals, col) in enumerate(series_a):
+        offset = (i - 2) * width_a
+        rects = ax.bar(x_a + offset, vals, width_a, label=lbl, color=col, edgecolor='black', linewidth=0.65, alpha=0.92)
+        for rect in rects:
+            h = rect.get_height()
+            ax.annotate(f'{h:.4f}', xy=(rect.get_x() + rect.get_width() / 2, h),
+                        xytext=(0, 3), textcoords='offset points',
+                        ha='center', va='bottom', fontsize=8.8, fontweight='bold', rotation=15)
 
-    # Single unified figure-level legend at top for ultra-clean layout without covering bars
+    # Reference lines for SIGIR 2024 published results on Tmall
+    ax.hlines(0.1414, x_a[0] - 0.42, x_a[0] + 0.42, colors='#d62728', linestyles='--', linewidth=1.3,
+              label='Chuẩn bài báo gốc SIGIR\'24' if lang == 'vi' else 'SIGIR\'24 Paper Benchmark')
+    ax.hlines(0.0741, x_a[1] - 0.42, x_a[1] + 0.42, colors='#d62728', linestyles='--', linewidth=1.3)
+
+    ax.set_ylabel('Giá trị độ đo' if lang == 'vi' else 'Metric Value', fontsize=11.5, fontweight='bold')
+    ax.set_title('(a) Tmall: Nhóm chỉ số Top-10 (HR@10 & NDCG@10)' if lang == 'vi' else '(a) Tmall: Top-10 Metrics (HR@10 & NDCG@10)',
+                 fontsize=12, fontweight='bold', pad=8)
+    ax.set_xticks(x_a)
+    ax.set_xticklabels(labels_a, fontsize=11.5, fontweight='bold')
+    ax.set_ylim(0, 0.182)
+    ax.grid(axis='y', linestyle='--', alpha=0.45)
+
+    # --------------------------------------------------------------------------
+    # Subplot (b): Tmall Top-20 Metrics (HR@20 & NDCG@20) across Approach 1 & 2
+    # --------------------------------------------------------------------------
+    ax = axes[0, 1]
+    x_b = np.arange(2)
+    labels_b = ['HR@20', 'NDCG@20']
+
+    series_b = [
+        ('BIPN (Tái lập)' if lang == 'vi' else 'BIPN (Replicated)', [0.2000, 0.0884], c_base),
+        ('HTC1: BIPN-InvWeight' if lang == 'vi' else 'App.1: BIPN-InvWeight', [0.0127, 0.0046], c_m1_inv),
+        ('HTC1: LightGCN-Base' if lang == 'vi' else 'App.1: LightGCN-Base', [0.0197, 0.0083], c_lgcn),
+        ('HTC2: BIPN-Weighted (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Weighted (Ours)', [0.2108, 0.0928], c_m2_w),
+        ('HTC2: BIPN-Learned (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Learned (Ours)', [0.2075, 0.0923], c_m2_l),
+    ]
+
+    for i, (lbl, vals, col) in enumerate(series_b):
+        offset = (i - 2) * width_a
+        rects = ax.bar(x_b + offset, vals, width_a, label=lbl, color=col, edgecolor='black', linewidth=0.65, alpha=0.92)
+        for rect in rects:
+            h = rect.get_height()
+            ax.annotate(f'{h:.4f}', xy=(rect.get_x() + rect.get_width() / 2, h),
+                        xytext=(0, 3), textcoords='offset points',
+                        ha='center', va='bottom', fontsize=8.8, fontweight='bold', rotation=15)
+
+    ax.hlines(0.2033, x_b[0] - 0.42, x_b[0] + 0.42, colors='#d62728', linestyles='--', linewidth=1.3)
+    ax.hlines(0.0898, x_b[1] - 0.42, x_b[1] + 0.42, colors='#d62728', linestyles='--', linewidth=1.3)
+
+    ax.set_ylabel('Giá trị độ đo' if lang == 'vi' else 'Metric Value', fontsize=11.5, fontweight='bold')
+    ax.set_title('(b) Tmall: Nhóm chỉ số Top-20 (HR@20 & NDCG@20)' if lang == 'vi' else '(b) Tmall: Top-20 Metrics (HR@20 & NDCG@20)',
+                 fontsize=12, fontweight='bold', pad=8)
+    ax.set_xticks(x_b)
+    ax.set_xticklabels(labels_b, fontsize=11.5, fontweight='bold')
+    ax.set_ylim(0, 0.255)
+    ax.grid(axis='y', linestyle='--', alpha=0.45)
+
+    # --------------------------------------------------------------------------
+    # Subplot (c): Retailrocket Approach 1 (Preserving 100% of Milestone 1 Data)
+    # --------------------------------------------------------------------------
+    ax = axes[1, 0]
+    x_c = np.arange(4)
+    labels_c = ['HR@10', 'NDCG@10', 'HR@20', 'NDCG@20']
+    width_c = 0.25
+
+    series_c = [
+        ('BIPN-Base', [0.1275, 0.0901, 0.1515, 0.0962], c_base),
+        ('HTC1: BIPN-InvWeight', [0.1229, 0.0865, 0.1482, 0.0929], c_m1_inv),
+        ('HTC1: LightGCN-Base', [0.0003, 0.0001, 0.0007, 0.0002], c_lgcn),
+    ]
+
+    for i, (lbl, vals, col) in enumerate(series_c):
+        offset = (i - 1) * width_c
+        rects = ax.bar(x_c + offset, vals, width_c, label=lbl, color=col, edgecolor='black', linewidth=0.65, alpha=0.92)
+        for rect in rects:
+            h = rect.get_height()
+            ax.annotate(f'{h:.4f}', xy=(rect.get_x() + rect.get_width() / 2, h),
+                        xytext=(0, 3), textcoords='offset points',
+                        ha='center', va='bottom', fontsize=8.6, fontweight='bold', rotation=20)
+
+    ax.set_ylabel('Giá trị độ đo' if lang == 'vi' else 'Metric Value', fontsize=11.5, fontweight='bold')
+    ax.set_title('(c) Retailrocket – Hướng tiếp cận 1 (Khung cơ sở ban đầu)' if lang == 'vi' else '(c) Retailrocket – Approach 1 (Initial Baseline Framework)',
+                 fontsize=12, fontweight='bold', pad=8)
+    ax.set_xticks(x_c)
+    ax.set_xticklabels(labels_c, fontsize=11, fontweight='bold')
+    ax.set_ylim(0, 0.188)
+    ax.grid(axis='y', linestyle='--', alpha=0.45)
+
+    # --------------------------------------------------------------------------
+    # Subplot (d): Retailrocket Approach 2 (Aligned Framework + Logarithmic Modulation)
+    # --------------------------------------------------------------------------
+    ax = axes[1, 1]
+    x_d = np.arange(4)
+    labels_d = ['Valid HR@10', 'Test HR@10', 'Test NDCG@10', 'Test HR@20']
+    width_d = 0.20
+
+    series_d = [
+        ('BIPN-Aligned', [0.4983, 0.8571, 0.7451, 0.8787], c_base),
+        ('HTC2: BIPN-Weighted', [0.5198, 0.8590, 0.7459, 0.8805], c_m2_w),
+        ('HTC2: BIPN-Learned', [0.5198, 0.8599, 0.7462, 0.8805], c_m2_l),
+        ('LightGCN-Aligned', [0.0226, 0.0046, 0.0035, 0.0055], c_lgcn),
+    ]
+
+    for i, (lbl, vals, col) in enumerate(series_d):
+        offset = (i - 1.5) * width_d
+        rects = ax.bar(x_d + offset, vals, width_d, label=lbl, color=col, edgecolor='black', linewidth=0.65, alpha=0.92)
+        for rect in rects:
+            h = rect.get_height()
+            ax.annotate(f'{h:.4f}', xy=(rect.get_x() + rect.get_width() / 2, h),
+                        xytext=(0, 3), textcoords='offset points',
+                        ha='center', va='bottom', fontsize=8.2, fontweight='bold', rotation=35)
+
+    ax.set_ylabel('Giá trị độ đo' if lang == 'vi' else 'Metric Value', fontsize=11.5, fontweight='bold')
+    ax.set_title('(d) Retailrocket – Hướng tiếp cận 2 (Đồng bộ kiến trúc & λ_u logarit)' if lang == 'vi' else '(d) Retailrocket – Approach 2 (Aligned & Log Modulation)',
+                 fontsize=12, fontweight='bold', pad=8)
+    ax.set_xticks(x_d)
+    ax.set_xticklabels(labels_d, fontsize=10.8, fontweight='bold')
+    ax.set_ylim(0, 1.09)
+    ax.grid(axis='y', linestyle='--', alpha=0.45)
+
+    # Unified figure-level legend at top
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 0.965), ncol=3, frameon=True, fontsize=12)
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 0.962), ncol=3, frameon=True, fontsize=11)
 
-    supt = 'So sánh hiệu năng đa chỉ số trên hai bộ dữ liệu thực nghiệm' if lang == 'vi' else 'Multi-Metric Performance Comparison Across Datasets'
-    plt.suptitle(supt, fontsize=14.5, fontweight='bold', y=0.995)
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    supt = ('Đối sánh hiệu năng đa chỉ số qua hai hướng tiếp cận trên Tmall và Retailrocket'
+            if lang == 'vi' else
+            'Multi-Metric Performance Comparison Across Both Approaches on Tmall and Retailrocket')
+    plt.suptitle(supt, fontsize=14.5, fontweight='bold', y=0.998)
+    plt.tight_layout(rect=[0, 0, 1, 0.915])
 
     save_current_figure(f'fig_performance_metrics_{lang}')
 
 # ==============================================================================
-# 2. FIGURE 2: TRAINING DYNAMICS & CONVERGENCE DUAL-AXIS CURVE
+# 2. FIGURE 2: TRAINING DYNAMICS & CONVERGENCE DUAL-AXIS CURVE (M1 + M2 OVERLAY)
 # ==============================================================================
 def plot_convergence_dynamics(lang='vi'):
-    epochs, losses, val_hit20, val_ndcg20 = [], [], [], []
-    if os.path.exists(LOG_FILE):
-        with open(LOG_FILE, 'r', encoding='utf-8') as f:
+    # Parse Milestone 1 (official-bipn, 38 epochs)
+    ep_m1, loss_m1, val_hit20_m1 = [], [], []
+    if os.path.exists(LOG_FILE_M1):
+        with open(LOG_FILE_M1, 'r', encoding='utf-8') as f:
             for line in f:
                 loss_match = re.search(r'epoch (\d+).*Train loss is \[([0-9.]+)\]', line)
                 if loss_match:
-                    epochs.append(int(loss_match.group(1)))
-                    losses.append(float(loss_match.group(2)))
-                val_match = re.search(r'validate (\d+).*\'hit@20\': np\.float64\(([0-9.]+)\).*\'ndcg@20\': np\.float64\(([0-9.]+)\)', line)
+                    ep_m1.append(int(loss_match.group(1)))
+                    loss_m1.append(float(loss_match.group(2)))
+                val_match = re.search(r'validate (\d+).*\'hit@20\': np\.float64\(([0-9.]+)\)', line)
                 if val_match:
-                    val_hit20.append(float(val_match.group(2)))
-                    val_ndcg20.append(float(val_match.group(3)))
+                    val_hit20_m1.append(float(val_match.group(2)))
 
-    fig, ax1 = plt.subplots(figsize=(9.5, 5.0), dpi=300)
-    color_loss = '#d62728'
-    color_val = '#1f77b4'
+    # Parse Milestone 2 (bipn_weighted, 68 epochs)
+    ep_m2, loss_m2, val_hit20_m2 = [], [], []
+    if os.path.exists(LOG_FILE_M2):
+        with open(LOG_FILE_M2, 'r', encoding='utf-8') as f:
+            for line in f:
+                m = re.search(r'epoch (\d+) loss ([0-9.]+) valid \{.*?\'HR@20\': ([0-9.]+)', line)
+                if m:
+                    ep_m2.append(int(m.group(1)))
+                    loss_m2.append(float(m.group(2)))
+                    val_hit20_m2.append(float(m.group(3)))
+
+    fig, ax1 = plt.subplots(figsize=(10.5, 5.2), dpi=300)
+    color_loss_m1 = '#d62728'
+    color_loss_m2 = '#ff7f0e'
+    color_val_m1 = '#1f77b4'
+    color_val_m2 = '#2ca02c'
 
     xlabel = 'Epoch (Vòng lặp huấn luyện)' if lang == 'vi' else 'Training Epoch'
     ylabel_loss = 'Hàm mất mát (Train Loss)' if lang == 'vi' else 'Training Loss'
-    ylabel_val = 'Validation Hit@20' if lang == 'vi' else 'Validation Hit@20'
-    label_loss = 'Train Loss'
-    label_val = 'Validation Hit@20'
+    ylabel_val = 'Validation HR@20 (Hit@20)' if lang == 'vi' else 'Validation HR@20 (Hit@20)'
 
-    ax1.set_xlabel(xlabel, fontsize=12.5, fontweight='bold')
-    ax1.set_ylabel(ylabel_loss, color=color_loss, fontsize=12.5, fontweight='bold')
-    line1 = ax1.plot(epochs, losses, color=color_loss, marker='o', markersize=4.5, linewidth=2.0, label=label_loss)
-    ax1.tick_params(axis='y', labelcolor=color_loss, labelsize=11)
-    ax1.tick_params(axis='x', labelsize=11)
-    ax1.set_xlim(0.5, 41)
+    ax1.set_xlabel(xlabel, fontsize=12, fontweight='bold')
+    ax1.set_ylabel(ylabel_loss, color=color_loss_m1, fontsize=12, fontweight='bold')
+
+    l1 = ax1.plot(ep_m1, loss_m1, color=color_loss_m1, linestyle='--', marker='o', markersize=3.5, linewidth=1.8,
+                  label='Train Loss – BIPN Tái lập (38 Ep)' if lang == 'vi' else 'Train Loss – Replicated BIPN (38 Ep)')
+    l2 = ax1.plot(ep_m2, loss_m2, color=color_loss_m2, linestyle='-', marker='^', markersize=3.2, linewidth=1.8, alpha=0.9,
+                  label='Train Loss – HTC2: BIPN-Weighted (68 Ep)' if lang == 'vi' else 'Train Loss – App.2: BIPN-Weighted (68 Ep)')
+    ax1.tick_params(axis='y', labelcolor=color_loss_m1, labelsize=10.5)
+    ax1.tick_params(axis='x', labelsize=10.5)
+    ax1.set_xlim(0.5, 71)
+    ax1.set_ylim(0.055, 0.188)
     ax1.grid(True, linestyle=':', alpha=0.5)
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel(ylabel_val, color=color_val, fontsize=12.5, fontweight='bold')
-    line2 = ax2.plot(epochs, val_hit20, color=color_val, marker='s', markersize=4.5, linewidth=2.0, label=label_val)
-    ax2.tick_params(axis='y', labelcolor=color_val, labelsize=11)
-    ax2.set_ylim(0.215, 0.325)
+    ax2.set_ylabel(ylabel_val, color=color_val_m1, fontsize=12, fontweight='bold')
+    l3 = ax2.plot(ep_m1, val_hit20_m1, color=color_val_m1, linestyle='--', marker='s', markersize=4.0, linewidth=2.0,
+                  label='Valid Hit@20 – BIPN Tái lập (Đỉnh Ep 33)' if lang == 'vi' else 'Valid Hit@20 – Replicated BIPN (Peak Ep 33)')
+    l4 = ax2.plot(ep_m2, val_hit20_m2, color=color_val_m2, linestyle='-', marker='D', markersize=3.6, linewidth=2.1,
+                  label='Valid HR@20 – HTC2: BIPN-Weighted (Đỉnh Ep 58)' if lang == 'vi' else 'Valid HR@20 – App.2: BIPN-Weighted (Peak Ep 58)')
+    ax2.tick_params(axis='y', labelcolor=color_val_m1, labelsize=10.5)
+    ax2.set_ylim(0.215, 0.342)
 
-    best_epoch = 33
-    best_hit = val_hit20[best_epoch - 1]
-    ax2.scatter([best_epoch], [best_hit], color='#ff7f0e', s=120, zorder=5, edgecolor='black', linewidth=1.2)
-    
-    note_best = f'Điểm tối ưu: Epoch {best_epoch}\n(Hit@20 = {best_hit:.4f})' if lang == 'vi' else f'Optimal Checkpoint: Ep {best_epoch}\n(Hit@20 = {best_hit:.4f})'
-    ax2.annotate(note_best,
-                 xy=(best_epoch, best_hit), xytext=(best_epoch - 11.5, best_hit - 0.026),
-                 arrowprops=dict(facecolor='#ff7f0e', shrink=0.08, width=1.8, headwidth=7),
-                 fontsize=11, fontweight='bold', bbox=dict(boxstyle='round,pad=0.35', facecolor='#fff2cc', edgecolor='#d6b656', alpha=0.95))
+    # Highlight Milestone 1 Peak (Epoch 33, Hit@20 = 0.3094) & Early Stop (Epoch 38)
+    best_ep_m1 = 33
+    best_hit_m1 = val_hit20_m1[best_ep_m1 - 1]
+    ax2.scatter([best_ep_m1], [best_hit_m1], color='#1f77b4', s=110, zorder=6, edgecolor='black', linewidth=1.2)
+    note_m1 = (f'Đỉnh tái lập: Ep {best_ep_m1}\n(Hit@20 = {best_hit_m1:.4f})'
+               if lang == 'vi' else
+               f'Baseline Peak: Ep {best_ep_m1}\n(Hit@20 = {best_hit_m1:.4f})')
+    ax2.annotate(note_m1, xy=(best_ep_m1, best_hit_m1), xytext=(best_ep_m1 - 15, best_hit_m1 - 0.032),
+                 arrowprops=dict(facecolor='#1f77b4', shrink=0.08, width=1.6, headwidth=6),
+                 fontsize=10, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#eef7ff', edgecolor='#1f77b4', alpha=0.95))
 
-    ax1.axvline(x=38, color='black', linestyle='--', linewidth=1.3, alpha=0.7)
-    note_stop = 'Dừng sớm\n(Early Stopping\nPatience = 5)' if lang == 'vi' else 'Early Stopping\n(Patience = 5)'
-    ax1.text(38.4, 0.150, note_stop, 
-             ha='left', va='center', fontsize=10.5, fontweight='bold', fontstyle='italic',
-             bbox=dict(boxstyle='round,pad=0.3', facecolor='#eeeeee', edgecolor='gray', alpha=0.9))
+    ax1.axvline(x=38, color='#1f77b4', linestyle=':', linewidth=1.3, alpha=0.75)
+    ax2.text(38.5, 0.286, 'Dừng sớm Mốc 1\n(Ep 38, Patience=5)' if lang == 'vi' else 'Baseline Early Stop\n(Ep 38, Patience=5)',
+             fontsize=9.5, fontweight='bold', color='#1f4e78',
+             bbox=dict(boxstyle='round,pad=0.25', facecolor='#f0f4f8', edgecolor='#1f77b4', alpha=0.9))
 
-    lines = line1 + line2
+    # Highlight Milestone 2 Optimal Valid HR@10 Checkpoint (Epoch 58, HR@20 = 0.3238, HR@10 = 0.2397)
+    best_ep_m2 = 58
+    best_hit_m2 = val_hit20_m2[best_ep_m2 - 1]
+    ax2.scatter([best_ep_m2], [best_hit_m2], color='#2ca02c', s=125, zorder=6, edgecolor='black', linewidth=1.2)
+    note_m2 = (f'Đỉnh HTC2: Ep {best_ep_m2}\n(HR@20 = {best_hit_m2:.4f},\nValid HR@10 = 0.2397)'
+               if lang == 'vi' else
+               f'App.2 Peak: Ep {best_ep_m2}\n(HR@20 = {best_hit_m2:.4f},\nValid HR@10 = 0.2397)')
+    ax2.annotate(note_m2, xy=(best_ep_m2, best_hit_m2), xytext=(best_ep_m2 - 19, best_hit_m2 + 0.006),
+                 arrowprops=dict(facecolor='#2ca02c', shrink=0.08, width=1.6, headwidth=6),
+                 fontsize=10, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#e8f8e8', edgecolor='#2ca02c', alpha=0.95))
+
+    ax1.axvline(x=68, color='#2ca02c', linestyle='--', linewidth=1.3, alpha=0.75)
+
+    lines = l1 + l2 + l3 + l4
     labels = [l.get_label() for l in lines]
-    ax1.legend(lines, labels, loc='center right', bbox_to_anchor=(0.96, 0.32), frameon=True, fontsize=11.5)
+    ax1.legend(lines, labels, loc='center right', bbox_to_anchor=(0.98, 0.26), frameon=True, fontsize=9.8)
 
-    title = 'Đường cong hội tụ huấn luyện của mô hình BIPN trên bộ dữ liệu Tmall' if lang == 'vi' else 'BIPN Training Loss and Validation Convergence on Tmall'
-    plt.title(title, fontsize=13.5, fontweight='bold', pad=12)
+    title = ('Động học hội tụ huấn luyện trên Tmall: Bản tái lập gốc (38 Ep) và Hướng tiếp cận 2 (68 Ep)'
+             if lang == 'vi' else
+             'Training Convergence Dynamics on Tmall: Replicated Baseline (38 Ep) vs. Approach 2 (68 Ep)')
+    plt.title(title, fontsize=12.8, fontweight='bold', pad=12)
     plt.tight_layout()
 
     save_current_figure(f'fig_convergence_curve_{lang}')
 
 # ==============================================================================
-# 3. FIGURE 3: BEHAVIOR DISTRIBUTION & CONVERSION FUNNEL
+# 3. FIGURE 3: BEHAVIOR DISTRIBUTION & CONVERSION FUNNEL (INVARIANT DATASET STATS)
 # ==============================================================================
 def plot_behavior_distribution(lang='vi'):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.0, 5.0), dpi=300)
@@ -186,7 +325,6 @@ def plot_behavior_distribution(lang='vi'):
         at.set_fontsize(11)
         at.set_fontweight('bold')
 
-    # Leader line callout for ultra-rare Cart slice positioned in open lower-left region
     note_cart = 'Cart (2K, 0.1%)\n[Cực hiếm]' if lang == 'vi' else 'Cart (2K, 0.1%)\n[Ultra-rare]'
     ax1.annotate(note_cart, xy=(-0.77, 0.65), xytext=(-1.60, 0.38),
                  arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0.15", color='#d0021b', lw=1.8),
@@ -226,7 +364,7 @@ def plot_behavior_distribution(lang='vi'):
     save_current_figure(f'fig_behavior_distribution_{lang}')
 
 # ==============================================================================
-# 4. FIGURE 4: SPARSITY RESILIENCE & PERFORMANCE RETENTION (GÓC NHÌN ĐỘ THƯA THỚT)
+# 4. FIGURE 4: SPARSITY RESILIENCE & PERFORMANCE RETENTION
 # ==============================================================================
 def plot_sparsity_robustness(lang='vi'):
     """Analyzes the impact of extreme target sparsity: LightGCN collapses by 97.9%, while BIPN retains 91.2%."""
@@ -291,61 +429,103 @@ def plot_sparsity_robustness(lang='vi'):
     save_current_figure(f'fig_sparsity_robustness_{lang}')
 
 # ==============================================================================
-# 5. FIGURE 5: MULTIPLICATIVE GAIN & ABLATION STUDY WATERFALL
+# 5. FIGURE 5: MULTIPLICATIVE GAIN & DIVERGING ABLATION STUDY (APPROACH 1 VS APPROACH 2)
 # ==============================================================================
 def plot_relative_gain_ablation(lang='vi'):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.0, 4.8), dpi=300)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.2, 5.2), dpi=300)
 
     # Subplot 1: Multiplicative Gain of Multi-behavior over Single-behavior (HR@10)
     datasets = ['Tmall', 'Retailrocket']
     gains = [0.1398 / 0.0141, 0.1275 / 0.0003]
     colors_gain = ['#4a90e2', '#2ca02c']
 
-    bars1 = ax1.bar(datasets, gains, color=colors_gain, width=0.45, edgecolor='black', linewidth=0.8)
+    bars1 = ax1.bar(datasets, gains, color=colors_gain, width=0.42, edgecolor='black', linewidth=0.8)
     for bar, g in zip(bars1, gains):
         h = bar.get_height()
         ax1.annotate(f'Gấp {g:.1f}x' if lang == 'vi' else f'{g:.1f}x Gain',
                      xy=(bar.get_x() + bar.get_width() / 2, h),
                      xytext=(0, 4), textcoords="offset points",
                      ha='center', va='bottom', fontsize=11, fontweight='bold')
-    
-    ax1.set_ylabel('Hệ số vượt trội của BIPN so với LightGCN (lần)' if lang == 'vi' else 'BIPN Multiplicative Gain over LightGCN', fontsize=12, fontweight='bold')
-    title1 = '(a) Mức độ gia tăng tri thức từ Đa hành vi (HR@10)' if lang == 'vi' else '(a) Multi-behavior Information Gain (HR@10)'
-    ax1.set_title(title1, fontsize=12.5, fontweight='bold', pad=10)
+
+    ax1.set_ylabel('Hệ số vượt trội của BIPN so với LightGCN (lần)' if lang == 'vi' else 'BIPN Multiplicative Gain over LightGCN',
+                   fontsize=11.5, fontweight='bold')
+    title1 = '(a) Gia tăng tri thức từ Đa hành vi (HR@10)' if lang == 'vi' else '(a) Multi-behavior Information Gain (HR@10)'
+    ax1.set_title(title1, fontsize=12, fontweight='bold', pad=10)
     ax1.set_xticks(range(len(datasets)))
     ax1.set_xticklabels(datasets, fontsize=12, fontweight='bold')
     ax1.tick_params(axis='y', labelsize=10.5)
-    ax1.set_ylim(0, 490)
+    ax1.set_ylim(0, 495)
     ax1.grid(axis='y', linestyle='--', alpha=0.45)
 
-    note_rr = 'Đột biến 425 lần\ntrên tập thưa thớt' if lang == 'vi' else 'Dramatic 425x Surge\non Sparse Target'
-    ax1.annotate(note_rr, xy=(1, gains[1]), xytext=(0.42, gains[1] - 85),
+    note_rr = ('Đột biến 425 lần (HTC1)\n& 186.9 lần (HTC2)\ntrên tập thưa thớt'
+               if lang == 'vi' else
+               'Dramatic 425x (App.1)\n& 186.9x (App.2) Surge\non Sparse Target')
+    ax1.annotate(note_rr, xy=(1, gains[1]), xytext=(0.15, gains[1] - 115),
                  arrowprops=dict(facecolor='#2ca02c', shrink=0.08, width=1.8, headwidth=7),
-                 fontsize=11, fontweight='bold', bbox=dict(boxstyle='round,pad=0.3', facecolor='#efe', edgecolor='#2ca02c', alpha=0.95))
+                 fontsize=10.2, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#efe', edgecolor='#2ca02c', alpha=0.95))
 
-    # Subplot 2: Ablation Study Impact of Weighted Loss Formulation vs Vanilla BIPN
-    ablation_changes = [-94.92, -3.61]
-    colors_abl = ['#d9534f', '#f0ad4e']
+    # Subplot 2: Diverging Ablation Study comparing Approach 1 (Negative Collapse) vs Approach 2 (Positive Gain)
+    x = np.arange(len(datasets))
+    width = 0.25
 
-    bars2 = ax2.bar(datasets, ablation_changes, color=colors_abl, width=0.45, edgecolor='black', linewidth=0.8)
-    for bar, change in zip(bars2, ablation_changes):
+    # Percentage changes relative to baseline BIPN:
+    # Approach 1 (BIPN-InvWeight vs BIPN-Base): Tmall (0.0071 vs 0.1398 = -94.9%), Retailrocket (0.1229 vs 0.1275 = -3.6%)
+    # Approach 2 (BIPN-Weighted vs BIPN Baseline): Tmall (0.1472 vs 0.1398 = +5.3%, +4.1% vs SIGIR'24), Retailrocket Valid HR@10 (0.5198 vs 0.4983 = +4.3%)
+    # Approach 2 (BIPN-Learned vs BIPN Baseline): Tmall (0.1460 vs 0.1398 = +4.4%), Retailrocket Valid HR@10 (0.5198 vs 0.4983 = +4.3%)
+    m1_inv = [-94.9, -3.6]
+    m2_weighted = [+5.3, +4.3]
+    m2_learned = [+4.4, +4.3]
+
+    b_m1 = ax2.bar(x - width, m1_inv, width,
+                   label='HTC1: BIPN-InvWeight (Trọng số N/n_b)' if lang == 'vi' else 'App.1: BIPN-InvWeight (Unbounded N/n_b)',
+                   color='#d9534f', edgecolor='black', linewidth=0.8)
+    b_m2w = ax2.bar(x, m2_weighted, width,
+                    label='HTC2: BIPN-Weighted (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Weighted (Ours)',
+                    color='#2ca02c', edgecolor='black', linewidth=0.8)
+    b_m2l = ax2.bar(x + width, m2_learned, width,
+                    label='HTC2: BIPN-Learned (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Learned (Ours)',
+                    color='#17becf', edgecolor='black', linewidth=0.8)
+
+    for bar, val in zip(b_m1, m1_inv):
         h = bar.get_height()
-        ax2.annotate(f'{change:.1f}%',
-                     xy=(bar.get_x() + bar.get_width() / 2, h),
-                     xytext=(0, -15 if h < 0 else 4), textcoords="offset points",
-                     ha='center', va='bottom', fontsize=11, fontweight='bold')
-        
-    ax2.axhline(0, color='black', linewidth=0.9, linestyle='--')
-    ax2.set_ylabel('Mức thay đổi HR@10 so với BIPN gốc (%)' if lang == 'vi' else 'HR@10 Change Relative to Vanilla BIPN (%)', fontsize=12, fontweight='bold')
-    title2 = '(b) Ảnh hưởng của Trọng số tĩnh (Ablation Study)' if lang == 'vi' else '(b) Impact of Heuristic Weighting (Ablation)'
-    ax2.set_title(title2, fontsize=12.5, fontweight='bold', pad=10)
-    ax2.set_xticks(range(len(datasets)))
+        ax2.annotate(f'{val:+.1f}%', xy=(bar.get_x() + bar.get_width() / 2, h),
+                     xytext=(0, -15), textcoords="offset points",
+                     ha='center', va='bottom', fontsize=10, fontweight='bold', color='#a00000')
+
+    for bars, vals, col_txt in [(b_m2w, m2_weighted, '#156915'), (b_m2l, m2_learned, '#0a6b78')]:
+        for bar, val in zip(bars, vals):
+            h = bar.get_height()
+            ax2.annotate(f'+{val:.1f}%', xy=(bar.get_x() + bar.get_width() / 2, h),
+                         xytext=(0, 3), textcoords="offset points",
+                         ha='center', va='bottom', fontsize=9.8, fontweight='bold', color=col_txt)
+
+    ax2.axhline(0, color='black', linewidth=1.0, linestyle='--')
+
+    note_m2_gain = ('HTC2 vượt bài báo gốc\nSIGIR\'24 (+4.1% HR@10)'
+                    if lang == 'vi' else
+                    'App.2 Surpasses SIGIR\'24\nBenchmark (+4.1% HR@10)')
+    ax2.annotate(note_m2_gain, xy=(0, 5.3), xytext=(0.12, -38),
+                 arrowprops=dict(facecolor='#2ca02c', shrink=0.08, width=1.5, headwidth=6),
+                 fontsize=9.8, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.28', facecolor='#e8f8e8', edgecolor='#2ca02c', alpha=0.95))
+
+    ax2.set_ylabel('Mức biến thiên HR@10 so với BIPN chuẩn (%)' if lang == 'vi' else 'HR@10 Change Relative to Baseline BIPN (%)',
+                   fontsize=11.5, fontweight='bold')
+    title2 = ('(b) Bóc tách Ablation: Hướng tiếp cận 1 vs Hướng tiếp cận 2'
+              if lang == 'vi' else
+              '(b) Ablation Study: Approach 1 vs. Approach 2')
+    ax2.set_title(title2, fontsize=12, fontweight='bold', pad=10)
+    ax2.set_xticks(x)
     ax2.set_xticklabels(datasets, fontsize=12, fontweight='bold')
     ax2.tick_params(axis='y', labelsize=10.5)
-    ax2.set_ylim(-112, 18)
+    ax2.set_ylim(-115, 25)
     ax2.grid(axis='y', linestyle='--', alpha=0.45)
+    ax2.legend(loc='lower right', frameon=True, fontsize=9.5)
 
-    supt = 'Phân tích hệ số gia tăng tri thức và tác động bóc tách của hàm mất mát có trọng số' if lang == 'vi' else 'Information Gain Multiplier and Heuristic Weighting Ablation Analysis'
+    supt = ('Phân tích hệ số gia tăng tri thức đa hành vi và đối sánh bóc tách giữa hai hướng tiếp cận'
+            if lang == 'vi' else
+            'Multi-behavior Information Gain and Diverging Ablation Analysis Across Both Approaches')
     plt.suptitle(supt, fontsize=13.5, fontweight='bold', y=1.02)
     plt.tight_layout()
 

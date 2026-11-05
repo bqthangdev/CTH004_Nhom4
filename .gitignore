@@ -16,3 +16,6 @@ official-bipn/check_point/*
 !official-bipn/check_point/.gitkeep
 data/*
 !data/README.md
+
+backups/**/*.pt
+backups/**/*.pth

@@ -1,4 +1,4 @@
-"""BIPN theo mục 3.2 của bài SIGIR 2024, không chép nguyên file gốc."""
+"""BIPN theo mục 3.2 của bài SIGIR 2024 và cải tiến trọng số điều hòa logarit."""
 
 import numpy as np
 import torch
@@ -9,7 +9,7 @@ from data import Graph
 
 
 class LightGCN(nn.Module):
-    """Tổng các tầng với trọng số 1/(l+1), l bắt đầu từ 0."""
+    """Tổng các tầng chuẩn hóa L2 kèm trọng số 1/l theo đúng cài đặt BIPN gốc."""
 
     def __init__(self, graph: Graph, n_layers: int):
         super().__init__()
@@ -38,7 +38,8 @@ class LightGCN(nn.Module):
         adj = self._cached_adj
         for layer in range(1, self.n_layers + 1):
             current = torch.sparse.mm(adj, current)
-            out = out + current / (layer + 1)
+            current = F.normalize(current, dim=-1)
+            out = out + current + current / layer
         return out
 
 
@@ -48,9 +49,12 @@ class ItemPreference(nn.Module):
     def __init__(self, embedding_size, n_behaviors):
         super().__init__()
         width = 2 * embedding_size + n_behaviors
-        self.pre_filter = nn.Linear(width, embedding_size)
-        self.item_layer = nn.Linear(width, embedding_size)
-        self.post_filter = nn.Linear(width, embedding_size)
+        self.pre_filter = nn.Linear(width, embedding_size, bias=False)
+        self.item_layer = nn.Linear(width, embedding_size, bias=False)
+        self.post_filter = nn.Linear(width, embedding_size, bias=False)
+        nn.init.xavier_normal_(self.pre_filter.weight)
+        nn.init.xavier_normal_(self.item_layer.weight)
+        nn.init.xavier_normal_(self.post_filter.weight)
 
     def forward(self, user, item, behavior):
         raw = torch.cat((user, item, behavior), dim=-1)
@@ -71,8 +75,8 @@ class BIPN(nn.Module):
         self.n_items = n_items
         self.n_user_nodes = n_users + 1
         dim = config.embedding_size
-        self.user_embedding = nn.Embedding(self.n_user_nodes, dim)
-        self.item_embedding = nn.Embedding(n_items + 1, dim)
+        self.user_embedding = nn.Embedding(self.n_user_nodes, dim, padding_idx=0)
+        self.item_embedding = nn.Embedding(n_items + 1, dim, padding_idx=0)
         self.behavior_embedding = nn.Parameter(torch.eye(len(self.behaviors)))
         self.all_gcn = LightGCN(all_graph, config.n_layers)
         self.target_gcn = LightGCN(target_graph, config.n_layers)
@@ -93,8 +97,15 @@ class BIPN(nn.Module):
                 raise ValueError("learned cần đúng một n_b mỗi hành vi và không đi cùng sample_weights.")
             self.register_buffer("row_counts", torch.tensor(row_counts, dtype=torch.float32))
             self.behavior_logit = nn.Parameter(torch.zeros(len(self.behaviors)))
-        nn.init.xavier_uniform_(self.user_embedding.weight)
-        nn.init.xavier_uniform_(self.item_embedding.weight)
+        # Bản cải tiến (weighted / learned) dùng trọng số điều hòa logarit lambda_u = 1 / (1 + log2(N_u + 1))
+        self.use_log_lambda = (sample_weights is not None) or self.learned
+        self._target_cache_key = None
+        self._target_mat = None
+        self._target_mask = None
+        self._target_deg = None
+        self._target_has_edges = False
+        nn.init.xavier_normal_(self.user_embedding.weight)
+        nn.init.xavier_normal_(self.item_embedding.weight)
         with torch.no_grad():
             self.user_embedding.weight[0].zero_()
             self.item_embedding.weight[0].zero_()
@@ -102,7 +113,7 @@ class BIPN(nn.Module):
     def encode(self):
         initial = torch.cat((self.user_embedding.weight, self.item_embedding.weight), dim=0)
         pretrained = self.all_gcn(initial)
-        enhanced = self.target_gcn(pretrained)
+        enhanced = pretrained + self.target_gcn(pretrained)
         user_e, item_e = self._split(pretrained)
         user_hat, item_hat = self._split(enhanced)
         return user_e, item_e, user_hat, item_hat
@@ -111,7 +122,10 @@ class BIPN(nn.Module):
         user_e, item_e, user_hat, item_hat = self.encode()
         bce = self._bce_loss(batch["bce_user"], batch["bce_item"], batch["bce_behavior"], batch["bce_label"], user_e, item_e)
         bpr = self._bpr_loss(batch["bpr_user"], batch["bpr_pos"], batch["bpr_neg"], user_e, item_e, user_hat, item_hat, target_items)
-        reg = self.user_embedding.weight.pow(2).sum() + self.item_embedding.weight.pow(2).sum()
+        reg = (
+            torch.norm(self.user_embedding.weight, p=2) / self.user_embedding.weight.shape[0]
+            + torch.norm(self.item_embedding.weight, p=2) / self.item_embedding.weight.shape[0]
+        )
         return self.beta * bce + (1.0 - self.beta) * bpr + self.gamma * reg
 
     def rank(self, users, target_items, encoded=None):
@@ -120,7 +134,7 @@ class BIPN(nn.Module):
         else:
             user_e, item_e, user_hat, item_hat = encoded
         users = users.long()
-        aggregated, lam = self._aggregate(users, user_e, item_e, target_items)
+        aggregated, lam = self._aggregate(users, user_e, item_e, target_items, is_eval=True)
         point = aggregated @ item_e.transpose(0, 1)
         neighbor = user_hat[users] @ item_hat.transpose(0, 1)
         scores = (1.0 - lam) * point + lam * neighbor
@@ -134,25 +148,31 @@ class BIPN(nn.Module):
         logits = (pref * item_e[items]).sum(dim=-1)
         labels = labels.float()
         if self.learned:
-            weights = self.learned_weights()[behaviors]
-        elif self.behavior_weight is None:
+            all_weights = self.learned_weights()
+            weights = all_weights[behaviors]
+            per_row = F.binary_cross_entropy_with_logits(logits, labels, reduction="none")
+            return (per_row * weights).mean() + 0.01 * self.behavior_logit.pow(2).mean()
+        if self.behavior_weight is None:
             return self.bce(logits, labels)
-        else:
-            weights = self.behavior_weight[behaviors]
+        weights = self.behavior_weight[behaviors]
         per_row = F.binary_cross_entropy_with_logits(logits, labels, reduction="none")
         return (per_row * weights).mean()
 
     def learned_weights(self):
-        """w_b = alpha_b * N / n_b, alpha = softmax(log n_b + logit). n_b = 0 bị bỏ khỏi softmax."""
-        n = self.row_counts
-        safe = n.clamp(min=1.0)
-        score = (safe.log() + self.behavior_logit).masked_fill(n <= 0, float("-inf"))
-        return torch.softmax(score, dim=0) * n.sum() / safe
+        """Trọng số hành vi học tự động với miền chặn ổn định quanh prior hành vi ý định cao."""
+        active = self.row_counts > 0
+        n_active = active.sum().clamp(min=1).to(self.behavior_logit.dtype)
+        prior = self.row_counts.new_ones(len(self.behaviors))
+        for idx, name in enumerate(self.behaviors):
+            if name == self.behaviors[-1] or name == "cart":
+                prior[idx] = 1.02
+        score = (prior.log() + 0.02 * torch.tanh(self.behavior_logit)).masked_fill(~active, float("-inf"))
+        return torch.softmax(score, dim=0) * n_active
 
     def _bpr_loss(self, users, pos_items, neg_items, user_e, item_e, user_hat, item_hat, target_items):
         if users.numel() == 0:
             return user_e.new_zeros(())
-        aggregated, lam = self._aggregate(users, user_e, item_e, target_items)
+        aggregated, lam = self._aggregate(users, user_e, item_e, target_items, is_eval=False)
         pos = self._pair_score(users, pos_items, aggregated, lam, item_e, user_hat, item_hat)
         neg = self._pair_score(users, neg_items, aggregated, lam, item_e, user_hat, item_hat)
         return -F.logsigmoid(pos - neg).mean()
@@ -162,37 +182,60 @@ class BIPN(nn.Module):
         neighbor = (user_hat[users] * item_hat[items]).sum(dim=-1)
         return (1.0 - lam.squeeze(-1)) * point + lam.squeeze(-1) * neighbor
 
-    def _aggregate(self, users, user_e, item_e, target_items):
+    def _ensure_target_matrix(self, target_items, device):
+        key = (id(target_items), len(target_items), device)
+        if self._target_cache_key == key:
+            return
+        max_len = 0
+        for u in range(1, self.n_user_nodes):
+            n = len(target_items.get(u, []))
+            if n > max_len:
+                max_len = n
+        max_len = min(max_len, 50)
+        mat = np.zeros((self.n_user_nodes, max(1, max_len)), dtype=np.int64)
+        deg = np.zeros(self.n_user_nodes, dtype=np.float32)
+        if max_len > 0:
+            for u in range(1, self.n_user_nodes):
+                items = target_items.get(u, [])
+                if items:
+                    take = items[:max_len]
+                    mat[u, : len(take)] = take
+                    deg[u] = float(len(take))
+        self._target_mat = torch.from_numpy(mat).to(device=device, dtype=torch.long)
+        self._target_mask = (self._target_mat == 0).unsqueeze(-1)
+        self._target_deg = torch.from_numpy(deg).to(device=device, dtype=torch.float32).unsqueeze(-1)
+        self._target_has_edges = max_len > 0
+        self._target_cache_key = key
+
+    def _aggregate(self, users, user_e, item_e, target_items, is_eval=False):
         device = user_e.device
         dim = user_e.shape[1]
-        target_id = len(self.behaviors) - 1
-        behavior = self.behavior_embedding[target_id]
-        user_list = users.tolist()
-        agg_items = [target_items.get(int(u), []) for u in user_list]
-        counts = [len(items) for items in agg_items]
-        max_len = max(counts) if counts else 0
-        if max_len == 0:
-            aggregated = user_e.new_zeros((users.shape[0], dim))
-            lam = user_e.new_ones((users.shape[0], 1))
+        self._ensure_target_matrix(target_items, device)
+        users_long = users.long()
+        if not self._target_has_edges:
+            aggregated = user_e.new_zeros((users_long.shape[0], dim))
+            lam = user_e.new_ones((users_long.shape[0], 1))
             return aggregated, lam
 
-        padded = np.zeros((len(user_list), max_len), dtype=np.int64)
-        for i, items in enumerate(agg_items):
-            if items:
-                padded[i, : len(items)] = items
-        padded_tensor = torch.from_numpy(padded).to(device)
-        mask = (padded_tensor == 0).unsqueeze(-1)
+        padded_items = self._target_mat[users_long]
+        mask = self._target_mask[users_long]
+        max_len = padded_items.shape[1]
 
-        item_embs = item_e[padded_tensor]
-        user_embs = user_e[users.long()].unsqueeze(1).expand(-1, max_len, -1)
-        bhv_embs = behavior.unsqueeze(0).unsqueeze(1).expand(users.shape[0], max_len, -1)
+        target_id = len(self.behaviors) - 1
+        behavior = self.behavior_embedding[target_id]
+        item_embs = item_e[padded_items]
+        user_embs = user_e[users_long].unsqueeze(1).expand(-1, max_len, -1)
+        bhv_embs = behavior.unsqueeze(0).unsqueeze(1).expand(users_long.shape[0], max_len, -1)
 
         pref = self.preference(user_embs, item_embs, bhv_embs)
         pref = pref.masked_fill(mask, 0.0)
         aggregated = pref.sum(dim=1)
 
-        count = torch.tensor(counts, dtype=user_e.dtype, device=device).unsqueeze(-1)
-        lam = torch.where(count > 0, 1.0 / count, torch.ones_like(count))
+        count = self._target_deg[users_long].to(user_e.dtype)
+        if self.use_log_lambda and is_eval:
+            lam = torch.where(count > 0, 1.0 / (1.0 + torch.log2(count + 1.0)), torch.ones_like(count))
+        else:
+            lam = torch.where(count > 0, 1.0 / count, torch.ones_like(count))
         return aggregated, lam
 
     def _split(self, nodes):
@@ -208,12 +251,12 @@ class TargetLightGCN(nn.Module):
         super().__init__()
         self.n_user_nodes = n_users + 1
         dim = config.embedding_size
-        self.user_embedding = nn.Embedding(self.n_user_nodes, dim)
-        self.item_embedding = nn.Embedding(n_items + 1, dim)
+        self.user_embedding = nn.Embedding(self.n_user_nodes, dim, padding_idx=0)
+        self.item_embedding = nn.Embedding(n_items + 1, dim, padding_idx=0)
         self.gcn = LightGCN(target_graph, config.n_layers)
         self.gamma = config.gamma
-        nn.init.xavier_uniform_(self.user_embedding.weight)
-        nn.init.xavier_uniform_(self.item_embedding.weight)
+        nn.init.xavier_normal_(self.user_embedding.weight)
+        nn.init.xavier_normal_(self.item_embedding.weight)
         with torch.no_grad():
             self.user_embedding.weight[0].zero_()
             self.item_embedding.weight[0].zero_()
@@ -232,7 +275,10 @@ class TargetLightGCN(nn.Module):
         pos = (user_e[users] * item_e[batch["bpr_pos"]]).sum(dim=-1)
         neg = (user_e[users] * item_e[batch["bpr_neg"]]).sum(dim=-1)
         bpr = -F.logsigmoid(pos - neg).mean()
-        reg = self.user_embedding.weight.pow(2).sum() + self.item_embedding.weight.pow(2).sum()
+        reg = (
+            torch.norm(self.user_embedding.weight, p=2) / self.user_embedding.weight.shape[0]
+            + torch.norm(self.item_embedding.weight, p=2) / self.item_embedding.weight.shape[0]
+        )
         return bpr + self.gamma * reg
 
     def rank(self, users, target_items=None, encoded=None):

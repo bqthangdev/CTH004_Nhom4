@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import torch
 
 
 class Graph:
@@ -31,6 +32,125 @@ class BehaviorData:
         self.all_items = _union_items(train, self.behaviors)
         self.all_graph = _bipartite_graph(n_users, n_items, _pairs_from(train, self.behaviors))
         self.target_graph = _bipartite_graph(n_users, n_items, _pairs_from(train, [self.target]))
+        self._build_fast_structures()
+
+    def _build_fast_structures(self):
+        pos_u, pos_i, pos_b = [], [], []
+        for behavior_id, behavior in enumerate(self.behaviors):
+            for user, items in self.train[behavior].items():
+                if items:
+                    pos_u.extend([user] * len(items))
+                    pos_i.extend(items)
+                    pos_b.extend([behavior_id] * len(items))
+        self.pos_users = np.array(pos_u, dtype=np.int64)
+        self.pos_items = np.array(pos_i, dtype=np.int64)
+        self.pos_behaviors = np.array(pos_b, dtype=np.int64)
+
+        self.blocked_matrix = np.zeros((self.n_users + 1, self.n_items + 1), dtype=bool)
+        self.blocked_matrix[:, 0] = True
+        if self.pos_users.size > 0:
+            self.blocked_matrix[self.pos_users, self.pos_items] = True
+        self.all_blocked = np.all(self.blocked_matrix[:, 1:], axis=1)
+
+        self.buy_counts = np.zeros(self.n_users + 1, dtype=np.int64)
+        flat_buy = []
+        target_dict = self.train[self.target]
+        for user in range(1, self.n_users + 1):
+            items = target_dict.get(user, [])
+            self.buy_counts[user] = len(items)
+            if items:
+                flat_buy.extend(items)
+        self.buy_offsets = np.zeros(self.n_users + 1, dtype=np.int64)
+        np.cumsum(self.buy_counts[:-1], out=self.buy_offsets[1:])
+        self.flat_buy_items = np.array(flat_buy, dtype=np.int64)
+
+    def _sample_negatives(self, rng, users):
+        if users.size == 0:
+            return np.empty(0, dtype=np.int64)
+        if np.any(self.all_blocked[users]):
+            raise ValueError("User đã tương tác với mọi item, không còn mẫu âm.")
+        items = rng.integers(1, self.n_items + 1, size=users.shape[0], dtype=np.int64)
+        mask = self.blocked_matrix[users, items]
+        while np.any(mask):
+            bad_idx = np.flatnonzero(mask)
+            items[bad_idx] = rng.integers(1, self.n_items + 1, size=bad_idx.shape[0], dtype=np.int64)
+            mask = self.blocked_matrix[users, items]
+        return items
+
+    def iter_batches(self, rng, batch_size, neg_count, uses_bce, device):
+        """Sinh các batch huấn luyện đồng bộ theo tương tác dương giống cài đặt BIPN gốc."""
+        n_pos = self.pos_users.shape[0]
+        if n_pos == 0:
+            yield {
+                "bce_user": torch.empty(0, dtype=torch.long, device=device),
+                "bce_item": torch.empty(0, dtype=torch.long, device=device),
+                "bce_behavior": torch.empty(0, dtype=torch.long, device=device),
+                "bce_label": torch.empty(0, dtype=torch.float32, device=device),
+                "bpr_user": torch.empty(0, dtype=torch.long, device=device),
+                "bpr_pos": torch.empty(0, dtype=torch.long, device=device),
+                "bpr_neg": torch.empty(0, dtype=torch.long, device=device),
+            }
+            return
+
+        perm = rng.permutation(n_pos)
+        for start in range(0, n_pos, batch_size):
+            idx = perm[start : start + batch_size]
+            b_users = self.pos_users[idx]
+            b_items = self.pos_items[idx]
+            b_bhvs = self.pos_behaviors[idx]
+
+            if uses_bce:
+                if neg_count > 0:
+                    neg_u = np.repeat(b_users, neg_count)
+                    neg_b = np.repeat(b_bhvs, neg_count)
+                    neg_i = self._sample_negatives(rng, neg_u)
+                    bce_u = np.concatenate([b_users, neg_u])
+                    bce_i = np.concatenate([b_items, neg_i])
+                    bce_b = np.concatenate([b_bhvs, neg_b])
+                    bce_lbl = np.empty(bce_u.shape[0], dtype=np.float32)
+                    bce_lbl[: b_users.shape[0]] = 1.0
+                    bce_lbl[b_users.shape[0] :] = 0.0
+                else:
+                    bce_u = b_users
+                    bce_i = b_items
+                    bce_b = b_bhvs
+                    bce_lbl = np.ones(b_users.shape[0], dtype=np.float32)
+                bce_user_t = torch.from_numpy(bce_u).to(device=device, dtype=torch.long)
+                bce_item_t = torch.from_numpy(bce_i).to(device=device, dtype=torch.long)
+                bce_bhv_t = torch.from_numpy(bce_b).to(device=device, dtype=torch.long)
+                bce_lbl_t = torch.from_numpy(bce_lbl).to(device=device, dtype=torch.float32)
+            else:
+                bce_user_t = torch.empty(0, dtype=torch.long, device=device)
+                bce_item_t = torch.empty(0, dtype=torch.long, device=device)
+                bce_bhv_t = torch.empty(0, dtype=torch.long, device=device)
+                bce_lbl_t = torch.empty(0, dtype=torch.float32, device=device)
+
+            counts = self.buy_counts[b_users]
+            valid_mask = counts > 0
+            bpr_u = b_users[valid_mask]
+            if bpr_u.size > 0:
+                u_counts = counts[valid_mask]
+                u_offsets = self.buy_offsets[bpr_u]
+                rand_idx = (rng.random(bpr_u.shape[0]) * u_counts).astype(np.int64)
+                bpr_pos = self.flat_buy_items[u_offsets + rand_idx]
+                bpr_neg = self._sample_negatives(rng, bpr_u)
+                bpr_user_t = torch.from_numpy(bpr_u).to(device=device, dtype=torch.long)
+                bpr_pos_t = torch.from_numpy(bpr_pos).to(device=device, dtype=torch.long)
+                bpr_neg_t = torch.from_numpy(bpr_neg).to(device=device, dtype=torch.long)
+            else:
+                bpr_user_t = torch.empty(0, dtype=torch.long, device=device)
+                bpr_pos_t = torch.empty(0, dtype=torch.long, device=device)
+                bpr_neg_t = torch.empty(0, dtype=torch.long, device=device)
+
+            yield {
+                "bce_user": bce_user_t,
+                "bce_item": bce_item_t,
+                "bce_behavior": bce_bhv_t,
+                "bce_label": bce_lbl_t,
+                "bpr_user": bpr_user_t,
+                "bpr_pos": bpr_pos_t,
+                "bpr_neg": bpr_neg_t,
+            }
 
     def positive_counts(self):
         return [sum(len(items) for items in self.train[name].values()) for name in self.behaviors]

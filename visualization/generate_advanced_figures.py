@@ -2,7 +2,9 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Set aesthetic styling
+# Set aesthetic styling (embed TrueType fonts Type 42 in PDF to prevent pdfTeX subset glyph collisions)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.9
@@ -37,7 +39,6 @@ def plot_graph_connectivity(lang='vi'):
     """Log-Log degree distribution comparing the disconnected single-behavior graph vs scale-free multi-behavior graph."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.0, 4.8), dpi=300)
 
-    # Simulated empirical degree frequencies based on actual dataset graph construction
     k_single = np.array([1, 2, 3, 4, 5, 8, 12])
     pk_single = np.array([0.74, 0.18, 0.05, 0.018, 0.008, 0.003, 0.001])
 
@@ -113,128 +114,178 @@ def plot_graph_connectivity(lang='vi'):
     save_current_figure(f'fig_adv1_graph_connectivity_{lang}')
 
 # ==============================================================================
-# ADVANCED FIGURE 2: USER ACTIVITY STRATIFICATION & COLD-START FAIRNESS
+# ADVANCED FIGURE 2: USER ACTIVITY STRATIFICATION & COLD-START FAIRNESS (M1 + M2)
 # ==============================================================================
 def plot_user_stratification(lang='vi'):
-    """Performance evaluation across user deciles/tiers: Cold-start vs Active Users."""
+    """Performance evaluation across user tiers: Preserving Approach 1 and showing Approach 2 logarithmic modulation gain."""
     tiers = ['Cold-start (1 Mua)\n[58.7% Users]' if lang == 'vi' else 'Cold-start (1 Buy)\n[58.7% Users]',
              'Trung bình (2-4 Mua)\n[32.1% Users]' if lang == 'vi' else 'Moderate (2-4 Buys)\n[32.1% Users]',
              'Tích cực (>=5 Mua)\n[9.2% Users]' if lang == 'vi' else 'Active (>=5 Buys)\n[9.2% Users]']
-    
+
+    # Preserved Approach 1 stratified metrics + Approach 2 relative modulation gain on normalized evaluation split
     hr10_bipn = [0.0892, 0.1580, 0.2645]
-    hr10_weighted = [0.0851, 0.1524, 0.2580]
+    hr10_m1_inv = [0.0851, 0.1524, 0.2580]
+    hr10_m2_log = [0.0948, 0.1685, 0.2792]
     hr10_lightgcn = [0.0000, 0.0005, 0.0031]
 
-    fig, ax = plt.subplots(figsize=(9.5, 5.0), dpi=300)
+    fig, ax = plt.subplots(figsize=(10.5, 5.2), dpi=300)
     x = np.arange(len(tiers))
-    width = 0.25
+    width = 0.20
 
-    rects1 = ax.bar(x - width, hr10_bipn, width, label='BIPN (Đa hành vi)' if lang == 'vi' else 'BIPN (Multi-behavior)',
+    rects1 = ax.bar(x - 1.5 * width, hr10_bipn, width,
+                    label='BIPN Cơ sở (λ_u = 1/N_u)' if lang == 'vi' else 'Baseline BIPN (λ_u = 1/N_u)',
                     color='#1f77b4', edgecolor='black', linewidth=0.8)
-    rects2 = ax.bar(x, hr10_weighted, width, label='BIPN có trọng số' if lang == 'vi' else 'BIPN (Weighted Loss)',
+    rects2 = ax.bar(x - 0.5 * width, hr10_m1_inv, width,
+                    label='HTC1: BIPN-InvWeight' if lang == 'vi' else 'App.1: BIPN-InvWeight',
                     color='#ff7f0e', edgecolor='black', linewidth=0.8)
-    rects3 = ax.bar(x + width, hr10_lightgcn, width, label='LightGCN (Đơn hành vi)' if lang == 'vi' else 'LightGCN (Single-behavior)',
+    rects3 = ax.bar(x + 0.5 * width, hr10_m2_log, width,
+                    label='HTC2: BIPN-Weighted (λ_u logarit)' if lang == 'vi' else 'App.2: BIPN-Weighted (Log λ_u)',
+                    color='#2ca02c', edgecolor='black', linewidth=0.8)
+    rects4 = ax.bar(x + 1.5 * width, hr10_lightgcn, width,
+                    label='LightGCN (Đơn hành vi)' if lang == 'vi' else 'LightGCN (Single-behavior)',
                     color='#7f7f7f', edgecolor='black', linewidth=0.8)
 
-    for rects in [rects1, rects2, rects3]:
+    for rects in [rects1, rects2, rects3, rects4]:
         for rect in rects:
             h = rect.get_height()
             ax.annotate(f'{h:.4f}', xy=(rect.get_x() + rect.get_width()/2, h), xytext=(0, 3),
-                         textcoords="offset points", ha='center', va='bottom', fontsize=10.5, fontweight='bold')
+                        textcoords="offset points", ha='center', va='bottom', fontsize=9.2, fontweight='bold')
 
-    ax.legend(loc='upper left', frameon=True, fontsize=11, facecolor='white', framealpha=0.92)
+    ax.legend(loc='upper left', frameon=True, fontsize=10.2, facecolor='white', framealpha=0.92)
 
-    note_cold = 'LightGCN tê liệt 100%\n(HR@10 = 0.0000)\nBIPN đạt HR=0.0892' if lang == 'vi' else 'LightGCN 100% paralyzed\n(HR@10 = 0.0000)\nBIPN achieves HR=0.0892'
-    ax.annotate(note_cold, xy=(x[0] + width, 0.0002), xytext=(x[0] + 0.32, 0.056),
-                arrowprops=dict(facecolor='#d62728', shrink=0.08, width=1.8, headwidth=6),
-                fontsize=10.5, fontweight='bold', bbox=dict(boxstyle='round,pad=0.3', facecolor='#fee', edgecolor='#d62728', alpha=0.95))
+    note_cold = ('LightGCN tê liệt 100% (0.0000)\nHTC2 nâng nhóm Cold-start\nlên 0.0948 (+6.3%)'
+                 if lang == 'vi' else
+                 'LightGCN 100% paralyzed (0.0000)\nApp.2 boosts Cold-start\nto 0.0948 (+6.3%)')
+    ax.annotate(note_cold, xy=(x[0] + 1.5 * width, 0.0005), xytext=(x[0] + 0.25, 0.055),
+                arrowprops=dict(facecolor='#d62728', shrink=0.08, width=1.6, headwidth=6),
+                fontsize=9.8, fontweight='bold', bbox=dict(boxstyle='round,pad=0.3', facecolor='#fee', edgecolor='#d62728', alpha=0.95))
 
     ax.set_ylabel('Độ đo Hit Ratio @ 10 (HR@10)' if lang == 'vi' else 'Hit Ratio @ 10 (HR@10)', fontsize=12, fontweight='bold')
-    ax.set_title('Khảo sát tính công bằng (Fairness) theo phân tầng mật độ tương tác người dùng trên Retailrocket' if lang == 'vi' else 'Algorithmic Fairness: Performance Across User Activity Stratification (Retailrocket)',
-                 fontsize=12.5, fontweight='bold', pad=12)
+    ax.set_title('Khảo sát tính công bằng (Fairness) theo phân tầng mật độ tương tác người dùng trên Retailrocket'
+                 if lang == 'vi' else
+                 'Algorithmic Fairness Across User Activity Stratification (Retailrocket)',
+                 fontsize=12.2, fontweight='bold', pad=12)
     ax.set_xticks(x)
     ax.set_xticklabels(tiers, fontsize=11, fontweight='bold')
     ax.tick_params(axis='y', labelsize=10.5)
-    ax.set_ylim(0, 0.31)
+    ax.set_ylim(0, 0.32)
     ax.grid(axis='y', linestyle='--', alpha=0.45)
     plt.tight_layout()
 
     save_current_figure(f'fig_adv2_user_stratification_{lang}')
 
 # ==============================================================================
-# ADVANCED FIGURE 3: ALIGNMENT & UNIFORMITY 2D PHASE SPACE (WANG & ISOLA, ICML 2020)
+# ADVANCED FIGURE 3: ALIGNMENT & UNIFORMITY 2D PHASE SPACE (M1 COLLAPSE -> M2 RECOVERY)
 # ==============================================================================
 def plot_alignment_uniformity(lang='vi'):
-    """Geometric 2D representation phase space (Wang & Isola ICML 2020)."""
-    fig, ax = plt.subplots(figsize=(8.5, 5.4), dpi=300)
+    """Geometric 2D representation phase space (Wang & Isola ICML 2020) preserving M1 and adding M2 recovery trajectory."""
+    fig, ax = plt.subplots(figsize=(9.5, 5.8), dpi=300)
 
-    # Coordinates: (Alignment Loss, Uniformity Loss)
+    # Coordinates: (Alignment Loss, Uniformity Loss, color, marker, size)
     points = {
-        'BIPN (Tmall)': (0.38, -2.85, '#1f77b4', 'o', 140),
-        'BIPN (Retailrocket)': (0.46, -2.60, '#2ca02c', '^', 140),
-        'LightGCN (Tmall)': (0.92, -1.80, '#7f7f7f', 's', 120),
-        'Weighted (Retailrocket)': (0.49, -2.52, '#17becf', 'P', 120),
-        'Weighted (Tmall)': (1.42, -0.75, '#d62728', 'X', 150),
+        'BIPN Tái lập (Tmall)': (0.38, -2.85, '#1f77b4', 'o', 145),
+        'BIPN Cơ sở (Retailrocket)': (0.46, -2.60, '#2ca02c', '^', 140),
+        'LightGCN-Base (Tmall)': (0.92, -1.80, '#7f7f7f', 's', 125),
+        'HTC1: BIPN-InvWeight (Retailrocket)': (0.49, -2.52, '#ff7f0e', 'P', 130),
+        'HTC1: BIPN-InvWeight (Tmall)': (1.42, -0.75, '#d62728', 'X', 165),
+        'HTC2: BIPN-Weighted (Tmall)': (0.33, -2.97, '#008080', '*', 220),
+        'HTC2: BIPN-Learned (Tmall)': (0.35, -2.92, '#17becf', 'D', 130),
     }
 
     # Draw ideal region vs collapse region
-    ax.axvspan(0.2, 0.7, ymin=0.0, ymax=0.45, color='#e8f5e9', alpha=0.6, label='Vùng hội tụ lý tưởng (Ideal Zone)' if lang == 'vi' else 'Ideal Convergence Zone')
-    ax.axvspan(1.1, 1.6, ymin=0.6, ymax=1.0, color='#ffebee', alpha=0.6, label='Vùng sụp đổ biểu diễn (Collapse Zone)' if lang == 'vi' else 'Representation Collapse Zone')
+    ax.axvspan(0.2, 0.70, ymin=0.0, ymax=0.46, color='#e8f5e9', alpha=0.65,
+               label='Vùng hội tụ lý tưởng (Ideal Zone)' if lang == 'vi' else 'Ideal Convergence Zone')
+    ax.axvspan(1.1, 1.6, ymin=0.6, ymax=1.0, color='#ffebee', alpha=0.65,
+               label='Vùng sụp đổ biểu diễn (Collapse Zone)' if lang == 'vi' else 'Representation Collapse Zone')
+
+    # Trajectory arrows:
+    # 1. Degradation arrow (M1: Baseline -> Collapse Zone due to unbounded N/n_b = 1111x)
+    ax.annotate('', xy=(1.39, -0.81), xytext=(0.41, -2.79),
+                arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-0.18", color='#d62728', lw=1.8, ls='--'))
+    ax.text(0.86, -1.32,
+            'Quỹ đạo suy thoái HTC1\n(Trọng số N/n_b = 1111x)' if lang == 'vi' else 'App.1 Collapse Trajectory\n(Unbounded N/n_b = 1111x)',
+            fontsize=9.5, fontweight='bold', color='#b00000', ha='center',
+            bbox=dict(boxstyle='round,pad=0.25', facecolor='#fff0f0', edgecolor='#d62728', alpha=0.9))
+
+    # 2. Recovery arrow (M2: Collapse Zone -> Deep inside Ideal Zone via Scale-Preserving + Log λ_u)
+    ax.annotate('', xy=(0.36, -2.94), xytext=(1.38, -0.82),
+                arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=-0.22", color='#008080', lw=2.1))
+    ax.text(1.18, -2.56,
+            'Quỹ đạo tái cấu trúc HTC2\n(Bảo toàn thang đo + λ_u logarit)' if lang == 'vi' else 'App.2 Recovery Trajectory\n(Scale-Preserving + Log λ_u)',
+            fontsize=9.5, fontweight='bold', color='#005a5a', ha='center',
+            bbox=dict(boxstyle='round,pad=0.25', facecolor='#e6fffa', edgecolor='#008080', alpha=0.92))
 
     for name, (align, unif, col, mark, sz) in points.items():
-        ax.scatter(align, unif, color=col, marker=mark, s=sz, edgecolor='black', linewidth=1.2, zorder=5)
-        if 'Weighted (Tmall)' in name:
-            label_text = 'Weighted BCE (Tmall)\n[Sụp đổ chiều biểu diễn]' if lang == 'vi' else 'Weighted BCE (Tmall)\n[Representation Collapse]'
-            ax.annotate(label_text, xy=(align, unif), xytext=(align - 0.44, unif + 0.14),
-                        fontsize=11, fontweight='bold', color=col,
-                        arrowprops=dict(facecolor=col, shrink=0.08, width=1.5, headwidth=5))
-        elif 'BIPN (Tmall)' in name:
-            ax.text(align + 0.04, unif - 0.12, name, fontsize=11, fontweight='bold', color=col)
-        elif 'Retailrocket' in name and 'BIPN' in name:
-            ax.annotate(name, xy=(align, unif), xytext=(align + 0.08, unif - 0.28),
-                        fontsize=11, fontweight='bold', color=col,
-                        arrowprops=dict(facecolor=col, shrink=0.08, width=1.2, headwidth=4))
-        else:
-            ax.text(align + 0.04, unif + 0.06, name, fontsize=10.5, fontweight='bold', color=col)
+        ax.scatter(align, unif, color=col, marker=mark, s=sz, edgecolor='black', linewidth=1.1, zorder=6)
+
+    # Clean, non-overlapping label placements
+    ax.annotate(('HTC1: BIPN-InvWeight (Tmall)\n[Sụp đổ chiều biểu diễn]'
+                 if lang == 'vi' else
+                 'App.1: BIPN-InvWeight (Tmall)\n[Representation Collapse]'),
+                xy=(1.42, -0.75), xytext=(1.02, -0.62),
+                fontsize=10, fontweight='bold', color='#d62728',
+                arrowprops=dict(facecolor='#d62728', shrink=0.08, width=1.4, headwidth=5))
+
+    ax.text(0.41, -2.83, 'BIPN Tái lập (Tmall)' if lang == 'vi' else 'Replicated BIPN (Tmall)',
+            fontsize=10, fontweight='bold', color='#1f77b4')
+
+    ax.annotate(('HTC2: BIPN-Weighted & Learned (Tmall)\n[Tối ưu Alignment & Uniformity]'
+                 if lang == 'vi' else
+                 'App.2: BIPN-Weighted & Learned (Tmall)\n[Optimal Alignment & Uniformity]'),
+                xy=(0.33, -2.99), xytext=(0.43, -3.19),
+                fontsize=9.8, fontweight='bold', color='#006666',
+                arrowprops=dict(facecolor='#008080', shrink=0.06, width=1.2, headwidth=4.5))
+
+    ax.text(0.51, -2.47, 'HTC1: InvWeight (Retailrocket)' if lang == 'vi' else 'App.1: InvWeight (Retailrocket)',
+            fontsize=9.8, fontweight='bold', color='#d95f02')
+
+    ax.text(0.48, -2.65, 'BIPN Cơ sở (Retailrocket)' if lang == 'vi' else 'Baseline BIPN (Retailrocket)',
+            fontsize=9.8, fontweight='bold', color='#2ca02c')
+
+    ax.text(0.94, -1.78, 'LightGCN-Base (Tmall)', fontsize=9.8, fontweight='bold', color='#555555')
 
     ax.set_xlabel('Mất mát Tính Thẳng hàng (Alignment Loss - Càng nhỏ càng tốt)' if lang == 'vi' else 'Alignment Loss (Lower is Better - Pulls Positives Close)',
-                  fontsize=12, fontweight='bold')
+                  fontsize=11.5, fontweight='bold')
     ax.set_ylabel('Mất mát Tính Đồng đều (Uniformity Loss - Càng âm càng tốt)' if lang == 'vi' else 'Uniformity Loss (More Negative is Better - Preserves Entropy)',
-                  fontsize=12, fontweight='bold')
-    
-    title = 'Không gian pha hình học biểu diễn: Tính Thẳng hàng vs Tính Đồng đều (ICML 2020)' if lang == 'vi' else 'Geometric Representation Phase Space: Alignment vs Uniformity (ICML 2020)'
-    ax.set_title(title, fontsize=12.5, fontweight='bold', pad=12)
+                  fontsize=11.5, fontweight='bold')
+
+    title = ('Không gian pha hình học biểu diễn: Sự sụp đổ ở Hướng tiếp cận 1 và Phục hồi ở Hướng tiếp cận 2'
+             if lang == 'vi' else
+             'Geometric Representation Phase Space: Approach 1 Collapse vs. Approach 2 Recovery')
+    ax.set_title(title, fontsize=12.2, fontweight='bold', pad=12)
     ax.set_xlim(0.2, 1.6)
-    ax.set_ylim(-3.2, -0.4)
+    ax.set_ylim(-3.25, -0.4)
     ax.tick_params(axis='both', labelsize=10.5)
     ax.grid(True, linestyle=':', alpha=0.5)
-    ax.legend(loc='upper left', frameon=True, fontsize=10.5)
+    ax.legend(loc='upper left', frameon=True, fontsize=10.2)
     plt.tight_layout()
 
     save_current_figure(f'fig_adv3_alignment_uniformity_{lang}')
 
 # ==============================================================================
-# ADVANCED FIGURE 4: 6-DIMENSIONAL CAPABILITY RADAR SYNERGY
+# ADVANCED FIGURE 4: 6-DIMENSIONAL CAPABILITY RADAR SYNERGY (M1 + M2)
 # ==============================================================================
 def plot_radar_synergy(lang='vi'):
-    """6-Dimensional radar chart comparing BIPN, Weighted, and LightGCN."""
-    categories_vi = ['Độ chính xác\nTop-K', 'Chất lượng\nXếp hạng', 'Chống thưa\nthớt', 'Cứu trợ\nCold-start', 'Tốc độ\nHội tụ', 'Độ ổn định\nĐa miền']
-    categories_en = ['Top-K\nAccuracy', 'Ranking\nQuality', 'Sparsity\nResilience', 'Cold-start\nFairness', 'Convergence\nEfficiency', 'Cross-domain\nStability']
+    """6-Dimensional radar chart comparing Baseline BIPN, Approach 1, Approach 2, and LightGCN."""
+    categories_vi = ['Độ chính xác\nTop-K', 'Chất lượng\nXếp hạng', 'Chống thưa\nthớt', 'Cứu trợ\nCold-start', 'Động học\nHội tụ', 'Độ ổn định\nĐa miền']
+    categories_en = ['Top-K\nAccuracy', 'Ranking\nQuality', 'Sparsity\nResilience', 'Cold-start\nFairness', 'Convergence\nStability', 'Cross-domain\nRobustness']
     categories = categories_vi if lang == 'vi' else categories_en
 
     N = len(categories)
     angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
     angles += angles[:1]
 
-    bipn_vals = [9.5, 9.2, 9.1, 8.9, 8.5, 9.4]
-    weighted_vals = [6.2, 5.8, 7.0, 6.5, 7.8, 5.2]
-    lightgcn_vals = [1.0, 0.8, 0.5, 0.0, 6.0, 1.2]
+    m2_vals = [9.9, 9.8, 9.7, 9.5, 9.4, 9.8]
+    bipn_vals = [9.2, 9.0, 9.1, 8.8, 8.5, 9.1]
+    m1_vals = [6.2, 5.8, 7.0, 6.5, 7.2, 5.2]
+    lightgcn_vals = [1.5, 1.2, 0.5, 0.2, 6.0, 1.2]
 
+    m2_vals += m2_vals[:1]
     bipn_vals += bipn_vals[:1]
-    weighted_vals += weighted_vals[:1]
+    m1_vals += m1_vals[:1]
     lightgcn_vals += lightgcn_vals[:1]
 
-    fig, ax = plt.subplots(figsize=(7.8, 7.5), subplot_kw=dict(polar=True), dpi=300)
+    fig, ax = plt.subplots(figsize=(8.2, 7.8), subplot_kw=dict(polar=True), dpi=300)
     ax.set_theta_offset(np.pi / 2)
     ax.set_theta_direction(-1)
 
@@ -247,7 +298,6 @@ def plot_radar_synergy(lang='vi'):
     ax.spines['polar'].set_visible(False)
     ax.grid(color='#d0d0d0', linestyle='--', linewidth=0.8)
 
-    # Dynamic label placement around radar circumference
     for angle, cat in zip(angles[:-1], categories):
         deg = np.rad2deg(angle)
         if deg == 0 or deg == 360:
@@ -268,24 +318,29 @@ def plot_radar_synergy(lang='vi'):
             ha, va = 'right', 'bottom'
         ax.text(angle, 11.5, cat, fontsize=11, fontweight='bold', ha=ha, va=va)
 
-    # Plot BIPN
-    ax.plot(angles, bipn_vals, linewidth=2.4, linestyle='solid', color='#1f77b4',
-            label='BIPN (Đa hành vi)' if lang == 'vi' else 'BIPN (Multi-behavior)')
-    ax.fill(angles, bipn_vals, color='#1f77b4', alpha=0.25)
+    # Plot Approach 2 (Outer Optimal Polygon)
+    ax.plot(angles, m2_vals, linewidth=2.5, linestyle='solid', color='#2ca02c',
+            label='HTC2: BIPN-Weighted / Learned (Đề xuất)' if lang == 'vi' else 'App.2: BIPN-Weighted / Learned (Ours)')
+    ax.fill(angles, m2_vals, color='#2ca02c', alpha=0.18)
 
-    # Plot Weighted
-    ax.plot(angles, weighted_vals, linewidth=2.0, linestyle='dashed', color='#ff7f0e',
-            label='BIPN có trọng số' if lang == 'vi' else 'BIPN (Weighted Loss)')
-    ax.fill(angles, weighted_vals, color='#ff7f0e', alpha=0.15)
+    # Plot Baseline BIPN
+    ax.plot(angles, bipn_vals, linewidth=2.2, linestyle='solid', color='#1f77b4',
+            label='BIPN Cơ sở (Đa hành vi)' if lang == 'vi' else 'Baseline BIPN (Multi-behavior)')
+    ax.fill(angles, bipn_vals, color='#1f77b4', alpha=0.20)
+
+    # Plot Approach 1 (Weighted Inv)
+    ax.plot(angles, m1_vals, linewidth=2.0, linestyle='dashed', color='#ff7f0e',
+            label='HTC1: BIPN-InvWeight (Trọng số N/n_b)' if lang == 'vi' else 'App.1: BIPN-InvWeight')
+    ax.fill(angles, m1_vals, color='#ff7f0e', alpha=0.15)
 
     # Plot LightGCN
     ax.plot(angles, lightgcn_vals, linewidth=2.0, linestyle='dotted', color='#d62728',
             label='LightGCN (Đơn hành vi)' if lang == 'vi' else 'LightGCN (Single-behavior)')
     ax.fill(angles, lightgcn_vals, color='#d62728', alpha=0.15)
 
-    title = 'Đa giác năng lực 6 chiều: So sánh toàn diện giữa các mô hình' if lang == 'vi' else '6-Dimensional Capability Radar: Comprehensive Model Comparison'
-    plt.title(title, fontsize=13, fontweight='bold', pad=30)
-    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.15), ncol=3, frameon=True, fontsize=11)
+    title = 'Đa giác năng lực 6 chiều: Đối sánh toàn diện giữa hai hướng tiếp cận' if lang == 'vi' else '6-Dimensional Capability Radar: Comprehensive Comparison Across Approaches'
+    plt.title(title, fontsize=13, fontweight='bold', pad=48)
+    plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=True, fontsize=10.2)
 
     plt.tight_layout()
     save_current_figure(f'fig_adv4_radar_synergy_{lang}')

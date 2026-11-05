@@ -25,21 +25,19 @@ class Config:
         self.topk = (10, 20)
         self.seed = 2021
         self.device = "cpu"
-        self.behavior_boost = 2.0
+        self.behavior_boost = 1.02
 
 
 def behavior_sample_weights(counts, behaviors, boost, neg_count):
-    """Trọng số từng dòng BCE để phần đóng góp kỳ vọng tỉ lệ với alpha."""
+    """Trọng số hành vi trong BCE chuẩn hóa trung bình bằng 1, tránh phóng đại cực đoan."""
+    del neg_count
     alphas = _alphas(behaviors, boost)
-    row_counts = [count * (1 + neg_count) for count in counts]
-    total = sum(row_counts)
-    alpha_sum = sum(alphas)
-    if total == 0 or alpha_sum == 0:
+    active = [alpha if count > 0 else 0.0 for alpha, count in zip(alphas, counts)]
+    n_active = sum(1 for count in counts if count > 0)
+    alpha_sum = sum(active)
+    if n_active == 0 or alpha_sum == 0:
         raise ValueError("Không có mẫu BCE để tính trọng số hành vi.")
-    weights = []
-    for rows, alpha in zip(row_counts, alphas):
-        weights.append(0.0 if rows == 0 else alpha * total / (rows * alpha_sum))
-    return weights
+    return [alpha * n_active / alpha_sum for alpha in active]
 
 
 def _alphas(behaviors, boost):
